@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 // import prisma from '../../../lib/prisma';
 import { PrismaClient } from '@prisma/client';
 
@@ -10,7 +10,7 @@ export async function GET() {
     try {
         const datosLogistica = await prisma.logisticTable.findMany();
         return NextResponse.json(datosLogistica);
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { error: 'Error al obtener datos de logistica' },
             { status: 500 }

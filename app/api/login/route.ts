@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers'; // Importa cookies de next/headers
 import { findUserByCorreoYContrasena } from '@/app/data/login';
 
 
