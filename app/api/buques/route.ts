@@ -20,8 +20,23 @@ export async function POST(request: Request) {
   try {
     const body: Omit<Buque, 'id' | 'createdAt' | 'updatedAt'> = await request.json();
 
-    if (!body.nombre || !body.tipo || !body.loa || !body.estado) {
+    // Asegura que agenciaId es un número
+    const agenciaId = Number(body.agenciaId);
+
+    if (
+      !body.nombre ||
+      !body.tipo ||
+      body.loa === null || body.loa === undefined ||
+      !body.estado ||
+      !agenciaId || isNaN(agenciaId) || agenciaId <= 0 // validamos que sea un número válido y positivo
+    ) {
       return NextResponse.json({ message: 'Todos los campos son obligatorios' }, { status: 400 });
+    }
+
+    // Verifica que la agencia existe
+    const agencia = await prisma.agencia.findUnique({ where: { id: agenciaId } });
+    if (!agencia) {
+      return NextResponse.json({ message: 'La agencia seleccionada no existe.' }, { status: 400 });
     }
 
     const loaNum = Number(body.loa);
@@ -32,9 +47,8 @@ export async function POST(request: Request) {
         estado: body.estado,
         loa: loaNum,
         agencia: {
-          connect: { id: body.agenciaId },
+          connect: { id: agenciaId },
         },
-        // No agregues tipoBuque si no existe en el modelo
       },
     });
 

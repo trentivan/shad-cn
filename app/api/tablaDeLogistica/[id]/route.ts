@@ -48,10 +48,10 @@ export async function PUT(
     // Remover id del body para que no se incluya en data
     const { id: bodyId, ...updateData } = body;
 
-    // Convert loa to string if present and not already a string
+    // Convert loa to number if present and not already a number
     const fixedUpdateData = {
       ...updateData,
-      loa: updateData.loa !== undefined ? String(updateData.loa) : undefined,
+      loa: updateData.loa !== undefined ? Number(updateData.loa) : undefined,
     };
 
     const updatedTablaDeLogistica = await prisma.logisticTable.update({

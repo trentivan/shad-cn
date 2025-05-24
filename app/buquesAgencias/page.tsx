@@ -17,13 +17,17 @@ export default function BuquesPage() {
     const [editingBuque, setEditingBuque] = useState<Buque | null>(null);
     const [updateError, setUpdateError] = useState<string | null>(null);
 
-    const [deleteError, setDeleteError] = useState<string | null>(null);
-
-    // Estados para el formulario de nuevo buque
+    const [deleteError, setDeleteError] = useState<string | null>(null);    // Estados para el formulario de nuevo buque
     const [isCreatingNewBuque, setIsCreatingNewBuque] = useState(false);
-    const [newBuqueData, setNewBuqueData] = useState<Omit<Buque, 'id' | 'createdAt' | 'updatedAt'>>({
+    const [newBuqueData, setNewBuqueData] = useState<{
+        nombre: string;
+        agenciaId: number | string; // Allow both types for form handling
+        tipo: string;
+        loa: number;
+        estado: string;
+    }>({
         nombre: '',
-        agenciaId: 0,
+        agenciaId: '', // Initially empty string to force user selection
         tipo: 'materia prima', // Valor por defecto
         loa: 0,
         estado: 'Activo', // Valor por defecto
@@ -103,14 +107,12 @@ export default function BuquesPage() {
                 console.error(err);
             }
         }
-    };
-
-    // Abre el modal para crear un nuevo buque
+    };    // Abre el modal para crear un nuevo buque
     const handleOpenNewBuqueModal = () => {
         setIsCreatingNewBuque(true);
         setNewBuqueData({
             nombre: '',
-            agenciaId: 0,
+            agenciaId: '', // Start with empty string to force selection
             tipo: 'materia prima',
             loa: 0,
             estado: 'Activo',
@@ -162,24 +164,22 @@ export default function BuquesPage() {
     // Cierra el modal de editar buque
     const handleCloseEditBuqueModal = () => {
         setIsEditing(false);
-    };
-
-    // Maneja el cambio de datos en campos de entrada
+    };    // Maneja el cambio de datos en campos de entrada
     // para el nuevo buque
     const handleNewBuqueInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        let processedValue: any = value; // Usamos 'any' temporalmente para evitar errores de tipo iniciales.
+        let processedValue: any = value;
 
         if (name === 'agenciaId') {
             processedValue = parseInt(value, 10); // Convierte a entero, base 10
-            if (isNaN(processedValue)) {
-                // Si el valor no es un número válido, puedes establecerlo como undefined o mostrar un error.
-                processedValue = undefined; // O puedes establecer un valor por defecto, como 0.
-                // O puedes mostrar un mensaje de error al usuario
-                // setCreationError("Agencia ID debe ser un número válido.");
-                // return;
+            if (isNaN(processedValue) || value === '') {
+                // If empty string or invalid number, keep it as empty string for form validation
+                processedValue = '';
             }
+        } else if (name === 'loa') {
+            processedValue = parseFloat(value) || 0;
         }
+        
         setNewBuqueData(prevData => ({
             ...prevData,
             [name]: processedValue,
@@ -202,11 +202,25 @@ export default function BuquesPage() {
             ...prevData,
             [name]: processedValue,
         } : prevData);
-    };
-
-    // Maneja la creación de un nuevo buque
+    };    // Maneja la creación de un nuevo buque
     const handleCreateNewBuque = async () => {
         setCreationError(null);
+          // Client-side validation
+        if (!newBuqueData.nombre.trim()) {
+            setCreationError('El nombre del buque es obligatorio');
+            return;
+        }
+        
+        if (!newBuqueData.agenciaId || newBuqueData.agenciaId === '' || (typeof newBuqueData.agenciaId === 'number' && newBuqueData.agenciaId <= 0)) {
+            setCreationError('Debe seleccionar una agencia');
+            return;
+        }
+        
+        if (!newBuqueData.loa || newBuqueData.loa <= 0) {
+            setCreationError('La eslora (LOA) debe ser mayor a 0');
+            return;
+        }
+        
         try {
             const response = await fetch('/api/buques', {
                 method: 'POST',
@@ -229,7 +243,7 @@ export default function BuquesPage() {
             setIsCreatingNewBuque(false);
         } catch (error: any) {
             console.error('Error al crear el buque:', error);
-            setCreationError('Error al crear el buque');
+            setCreationError(error.message || 'Error al crear el buque');
         }
     };
 
@@ -283,12 +297,11 @@ export default function BuquesPage() {
                                     onChange={handleNewBuqueInputChange}
                                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                                 />
-                            </div>
-                            <div className="mb-4">
+                            </div>                            <div className="mb-4">
                                 <label className="block text-gray-700 mb-1">Agencia</label>
                                 <select
                                     name="agenciaId"
-                                    value={newBuqueData.agenciaId ?? ''}
+                                    value={newBuqueData.agenciaId}
                                     onChange={handleNewBuqueInputChange}
                                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                                     required
