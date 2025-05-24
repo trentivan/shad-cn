@@ -49,7 +49,7 @@ export async function POST(request: Request) {
                 eta: etaDate,
                 pob: pobDate,
                 etb: etbDate,
-                etc: etbDate,
+                etc: etcDate,
                 etd: etdDate,
                 cargo: data.cargo,
             }

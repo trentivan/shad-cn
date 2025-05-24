@@ -21,14 +21,26 @@ function convertirFechaHora(fechaHoraString: string): Date {
     return new Date(anio, mes, dia, hora, minuto);
 }
 
-// function formatearFechaParaUsuario(date: Date): string {
-//     const dia = String(date.getDate()).padStart(2, '0');
-//     const mes = String(date.getMonth() + 1).padStart(2, '0'); // Sumamos 1 porque getMonth() es 0-indexado
-//     const hora = String(date.getHours()).padStart(2, '0');
-//     const minuto = String(date.getMinutes()).padStart(2, '0');
+function formatearFechaParaUsuario(date: Date): string {
+    const dia = String(date.getDate()).padStart(2, '0');
+    const mes = String(date.getMonth() + 1).padStart(2, '0'); // Sumamos 1 porque getMonth() es 0-indexado
+    const hora = String(date.getHours()).padStart(2, '0');
+    const minuto = String(date.getMinutes()).padStart(2, '0');
 
-//     return `${dia}/${mes} ${hora}:${minuto}`;
-// }
+    return `${dia}/${mes} ${hora}:${minuto}`;
+}
+
+function sumarHorasYMinutos(fecha: Date, tiempo: string): Date {
+    const [horasStr, minutosStr] = tiempo.split(':');
+    const horas = parseInt(horasStr, 10);
+    const minutos = parseInt(minutosStr, 10);
+
+    const nuevaFecha = new Date(fecha);
+    nuevaFecha.setHours(nuevaFecha.getHours() + horas);
+    nuevaFecha.setMinutes(nuevaFecha.getMinutes() + minutos);
+
+    return nuevaFecha;
+}
 
 export default function DataTable() {
     const [registros, setRegistros] = useState<tablaDeLogistica[]>([]);
@@ -189,9 +201,29 @@ export default function DataTable() {
             }
 
             const updated = await response.json();
-            setRegistros(registros =>
-                registros.map(r => (r.id === updated.id ? updated : r))
-            );
+
+            setRegistros(prevRegistros => {
+                // Ordena por ETA
+                const ordenados = [...prevRegistros].sort((a, b) => new Date(a.eta).getTime() - new Date(b.eta).getTime());
+                const editIndex = ordenados.findIndex(r => r.id === updated.id);
+
+                // Actualiza el registro editado con los datos nuevos
+                ordenados[editIndex] = updated;
+
+                // Recalcula los campos dependientes
+                const recalculados = recalcularRegistros(ordenados, editIndex, updated);
+
+                return recalculados;
+            });
+
+            // Al guardar la edición:
+            const registrosActualizados = recalcularRegistros(registros, 0, updated);
+            await fetch('/api/tablaDeLogistica/cascada', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ registros: registrosActualizados }),
+            });
+
             setIsEditing(false);
         } catch (err) {
             alert('Error al actualizar el registro');
@@ -583,4 +615,42 @@ export default function DataTable() {
             </div>
         </div>
     );
+}
+
+function recalcularRegistros(registros: tablaDeLogistica[], editIndex: number, registroEditado: tablaDeLogistica): tablaDeLogistica[] {
+    // Copia profunda para no mutar el estado original
+    const nuevosRegistros = registros.map(r => ({ ...r }));
+
+    // Actualiza el registro editado
+    nuevosRegistros[editIndex] = { ...registroEditado };
+
+    for (let i = editIndex; i < nuevosRegistros.length; i++) {
+        const actual = nuevosRegistros[i];
+        const anterior = i > 0 ? nuevosRegistros[i - 1] : null;
+
+        // Convierte los campos a Date
+        let pob: Date, etb: Date, etc: Date, etd: Date;
+
+        if (i === 0) {
+            // Primer registro: usa los valores ingresados
+            pob = convertirFechaHora(actual.pob);
+            etb = new Date(pob.getTime() + 60 * 60 * 1000);
+            etc = sumarHorasYMinutos(etb, actual.operationTime);
+            etd = new Date(etc.getTime() + 60 * 60 * 1000);
+        } else {
+            // Resto de registros: calcula en base al anterior
+            const etdAnterior = convertirFechaHora(nuevosRegistros[i - 1].etd);
+            pob = new Date(etdAnterior.getTime() + 60 * 60 * 1000);
+            etb = new Date(pob.getTime() + 60 * 60 * 1000);
+            etc = sumarHorasYMinutos(etb, actual.operationTime);
+            etd = new Date(etc.getTime() + 60 * 60 * 1000);
+        }
+
+        actual.pob = formatearFechaParaUsuario(pob);
+        actual.etb = formatearFechaParaUsuario(etb);
+        actual.etc = formatearFechaParaUsuario(etc);
+        actual.etd = formatearFechaParaUsuario(etd);
+    }
+
+    return nuevosRegistros;
 }

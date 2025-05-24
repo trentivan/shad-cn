@@ -233,7 +233,9 @@ export default function BuquesPage() {
                 throw new Error(error.message || 'Error al crear el buque');
             }
             
-            // cierra el modal            setBuques([...buques, newBuque]);
+            // cierra el modal  
+            const newBuque = await response.json();
+            setBuques([...buques, newBuque]);
             setIsCreatingNewBuque(false);
         } catch (error: unknown) {
             console.error('Error al crear el buque:', error);

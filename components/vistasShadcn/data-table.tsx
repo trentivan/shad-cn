@@ -21,6 +21,15 @@ function convertirFechaHora(fechaHoraString: string): Date {
     return new Date(anio, mes, dia, hora, minuto);
 }
 
+// function formatearFechaParaUsuario(date: Date): string {
+//     const dia = String(date.getDate()).padStart(2, '0');
+//     const mes = String(date.getMonth() + 1).padStart(2, '0'); // Sumamos 1 porque getMonth() es 0-indexado
+//     const hora = String(date.getHours()).padStart(2, '0');
+//     const minuto = String(date.getMinutes()).padStart(2, '0');
+
+//     return `${dia}/${mes} ${hora}:${minuto}`;
+// }
+
 export default function DataTable() {
     const [registros, setRegistros] = useState<tablaDeLogistica[]>([]);
     const [loading, setLoading] = useState(true);
@@ -41,6 +50,21 @@ export default function DataTable() {
         cargo: ''
     });
     const [creationError, setCreationError] = useState<string | null>(null);
+
+    // 1. Estado para el modal de edición y el registro a editar
+    const [isEditing, setIsEditing] = useState(false);
+    const [registroEdit, setRegistroEdit] = useState<Omit<tablaDeLogistica, 'createdAt' | 'updatedAt'>>({
+        id: 0,
+        vessel: '',
+        loa: 0,
+        operationTime: '',
+        eta: '',
+        pob: '',
+        etb: '',
+        etc: '',
+        etd: '',
+        cargo: ''
+    });
 
     const handleOpenNewRegistroModal = () => {
         setIsCreatingNewRegister(true);
@@ -69,18 +93,16 @@ export default function DataTable() {
     const handleCreateNewRegister = async () => {
         setCreationError(null);
         try {
-            // Convertir las strings de fecha/hora a objetos Date antes de enviar
             const dataToSend = {
                 ...newRegistro,
-                loa: Number(newRegistro.loa), // Asegura que sea un número
-                eta: convertirFechaHora(newRegistro.eta),
-                pob: convertirFechaHora(newRegistro.pob),
-                etb: convertirFechaHora(newRegistro.etb),
-                etc: convertirFechaHora(newRegistro.etc),
-                etd: convertirFechaHora(newRegistro.etd),
+                loa: Number(newRegistro.loa),
+                eta: newRegistro.eta ? convertirFechaHora(newRegistro.eta) : null,
+                pob: newRegistro.pob ? convertirFechaHora(newRegistro.pob) : null,
+                etb: newRegistro.etb ? convertirFechaHora(newRegistro.etb) : null,
+                etc: newRegistro.etc ? convertirFechaHora(newRegistro.etc) : null,
+                etd: newRegistro.etd ? convertirFechaHora(newRegistro.etd) : null,
             };
 
-            
             if (registros.some(r => r.vessel === newRegistro.vessel)) {
                 setCreationError('Este buque ya está registrado en la tabla.');
                 return;
@@ -102,40 +124,89 @@ export default function DataTable() {
 
             const newRegistroData = await response.json();
 
-            // Ordena los registros por ETA (de menor a mayor)
             setRegistros(prevRegistros => {
                 const nuevosRegistros = [...prevRegistros, newRegistroData];
                 return nuevosRegistros.sort((a, b) => {
                     const fechaA = new Date(a.eta).getTime();
-                    const fechaB = new Date(b.eta).getTime();                    return fechaA - fechaB;
+                    const fechaB = new Date(b.eta).getTime();
+                    return fechaA - fechaB;
                 });
             });
-
             setIsCreatingNewRegister(false);
         } catch (error: unknown) {
             console.error('Error al crear registro:', error);
-            setCreationError('Error al crear registro');        }
+            setCreationError('Error al crear registro');
+        }
     };
 
     const handleCloseNewUserModal = () => {
         setIsCreatingNewRegister(false);
-    };
+    };    const [menuOpenId, setMenuOpenId] = useState<number | null>(null);
 
-    const [menuOpenId, setMenuOpenId] = useState<number | null>(null);    // Ejemplo de handlers (debes implementar la lógica real)
-    const handleEdit = () => {
-        // Tu lógica para editar
+    // Ejemplo de handlers (debes implementar la lógica real)
+    const handleEdit = (registro: tablaDeLogistica) => {
+        setRegistroEdit({
+            ...registro,
+            eta: registro.eta ? format(new Date(registro.eta), 'dd/MM HH:mm') : '',
+            pob: registro.pob ? format(new Date(registro.pob), 'dd/MM HH:mm') : '',
+            etb: registro.etb ? format(new Date(registro.etb), 'dd/MM HH:mm') : '',
+            etc: registro.etc ? format(new Date(registro.etc), 'dd/MM HH:mm') : '',
+            etd: registro.etd ? format(new Date(registro.etd), 'dd/MM HH:mm') : '',
+        });
+        setIsEditing(true);
         setMenuOpenId(null);
     };
-    
+
+    const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setRegistroEdit(prev => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const handleUpdateRegistro = async () => {
+        try {
+            const dataToSend = {
+                ...registroEdit,
+                loa: Number(registroEdit.loa),
+                eta: registroEdit.eta ? convertirFechaHora(registroEdit.eta) : null,
+                pob: registroEdit.pob ? convertirFechaHora(registroEdit.pob) : null,
+                etb: registroEdit.etb ? convertirFechaHora(registroEdit.etb) : null,
+                etc: registroEdit.etc ? convertirFechaHora(registroEdit.etc) : null,
+                etd: registroEdit.etd ? convertirFechaHora(registroEdit.etd) : null,
+            };
+
+            const response = await fetch(`/api/tablaDeLogistica/${registroEdit.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataToSend),
+            });
+
+            if (!response.ok) {
+                alert('Error al actualizar el registro');
+                return;
+            }
+
+            const updated = await response.json();
+            setRegistros(registros =>
+                registros.map(r => (r.id === updated.id ? updated : r))
+            );
+            setIsEditing(false);
+        } catch (err) {
+            alert('Error al actualizar el registro');
+        }
+    };
+
     const handleDelete = async (id: number) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este registro?')) {
             setError(null);
             try {
-                const response = await fetch(`/api/tablaDeLogistica/${id}`, {                    method: 'DELETE',
+                const response = await fetch(`/api/tablaDeLogistica/${id}`, {
+                    method: 'DELETE',
                 });
                 if (!response.ok) {
-                    throw new Error('Error al eliminar el registro');
-                }
+                    throw new Error('Error al eliminar el registro');                }
                 setRegistros(registros.filter(registro => registro.id !== id));
             } catch (err: unknown) {
                 setError('Error al eliminar el registro');
@@ -146,15 +217,15 @@ export default function DataTable() {
         }
     };
 
-    useEffect(() => {        const fetchData = async () => {
+    useEffect(() => {
+        const fetchData = async () => {
             try {
                 const data = await getRegisters();
                 // Ordenar por ETA de menor a mayor
                 data.sort((a, b) => {
                     const fechaA = new Date(a.eta).getTime();
                     const fechaB = new Date(b.eta).getTime();
-                    return fechaA - fechaB;
-                });
+                    return fechaA - fechaB;                });
                 setRegistros(data);
             } catch {
                 setError('Error al cargar los registros');
@@ -180,6 +251,13 @@ export default function DataTable() {
 
     const buquesRegistrados = registros.map(r => r.vessel);
 
+    // Encuentra el id del primer registro (menor ETA)
+    const primerRegistroId = registros.length > 0
+        ? [...registros].sort((a, b) => new Date(a.eta).getTime() - new Date(b.eta).getTime())[0].id
+        : null;
+
+    const esPrimerRegistro = isEditing && registroEdit.id === primerRegistroId;
+
     if (loading) {
         return (
             <div className="bg-gray-50 text-gray-600 min-h-screen flex items-center justify-center">
@@ -202,7 +280,7 @@ export default function DataTable() {
                 {/* Formulario para crear nuevo usuario */}
                 {isCreatingNewRegister && (
                     <div className="bg-white rounded-lg shadow-md p-6 mb-8 max-w-md">
-                        <h2 className="text-xl font-bold text-gray-800 mb-4">Crear Nuevo Usuario</h2>
+                        <h2 className="text-xl font-bold text-gray-800 mb-4">Crear Nuevo Registro</h2>
                         {creationError && <div className="text-red-500 mb-4">{creationError}</div>}
                         <form onSubmit={(e) => {
                             e.preventDefault();
@@ -320,6 +398,118 @@ export default function DataTable() {
                     </div>
                 )}
 
+                {/* Modal de edición */}
+                {isEditing && (
+                    <div className="bg-white rounded-lg shadow-md p-6 mb-8 max-w-md">
+                        <h2 className="text-xl font-bold text-gray-800 mb-4">Modificar registro</h2>
+                        <form onSubmit={e => { e.preventDefault(); handleUpdateRegistro(); }}>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 text-sm font-bold mb-2">Vessel</label>
+                                <input
+                                    type="text"
+                                    name="vessel"
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+                                    value={registroEdit.vessel}
+                                    onChange={handleEditInputChange}
+                                    required
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 text-sm font-bold mb-2">LOA</label>
+                                <input
+                                    type="number"
+                                    name="loa"
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+                                    value={registroEdit.loa}
+                                    onChange={handleEditInputChange}
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 text-sm font-bold mb-2">Operation time</label>
+                                <input
+                                    type="text"
+                                    name="operationTime"
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+                                    value={registroEdit.operationTime}
+                                    onChange={handleEditInputChange}
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 text-sm font-bold mb-2">ETA</label>
+                                <input
+                                    type="text"
+                                    name="eta"
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+                                    value={registroEdit.eta}
+                                    onChange={handleEditInputChange}
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 text-sm font-bold mb-2">POB</label>
+                                <input
+                                    type="text"
+                                    name="pob"
+                                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 ${!esPrimerRegistro ? 'bg-gray-200 cursor-not-allowed' : ''}`}
+                                    value={registroEdit.pob}
+                                    onChange={handleEditInputChange}
+                                    disabled={!esPrimerRegistro}
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 text-sm font-bold mb-2">ETB</label>
+                                <input
+                                    type="text"
+                                    name="etb"
+                                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 ${!esPrimerRegistro ? 'bg-gray-200 cursor-not-allowed' : ''}`}
+                                    value={registroEdit.etb}
+                                    onChange={handleEditInputChange}
+                                    disabled={!esPrimerRegistro}
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 text-sm font-bold mb-2">ETC</label>
+                                <input
+                                    type="text"
+                                    name="etc"
+                                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 ${!esPrimerRegistro ? 'bg-gray-200 cursor-not-allowed' : ''}`}
+                                    value={registroEdit.etc}
+                                    onChange={handleEditInputChange}
+                                    disabled={!esPrimerRegistro}
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 text-sm font-bold mb-2">ETD</label>
+                                <input
+                                    type="text"
+                                    name="etd"
+                                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 ${!esPrimerRegistro ? 'bg-gray-200 cursor-not-allowed' : ''}`}
+                                    value={registroEdit.etd}
+                                    onChange={handleEditInputChange}
+                                    disabled={!esPrimerRegistro}
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 text-sm font-bold mb-2">Cargo</label>
+                                <input
+                                    type="text"
+                                    name="cargo"
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+                                    value={registroEdit.cargo}
+                                    onChange={handleEditInputChange}
+                                />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                    Guardar Cambios
+                                </button>
+                                <button type="button" onClick={() => setIsEditing(false)} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                )}
+
                 {/* Tabla de logistica */}
                 <div className="bg-white rounded-lg shadow-md p-6">
                     <div className="flex justify-between items-center mb-6">
@@ -367,9 +557,10 @@ export default function DataTable() {
                                                 <span className="text-xl">⋮</span>
                                             </button>
                                             {menuOpenId === registro.id && (
-                                                <div className="absolute top-0 right-18 w-32 bg-white border rounded shadow-lg z-10">                                                    <button
+                                                <div className="absolute top-0 right-18 w-32 bg-white border rounded shadow-lg z-10">
+                                                    <button
                                                         className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                                                        onClick={() => handleEdit()}
+                                                        onClick={() => handleEdit(registro)}
                                                     >
                                                         Editar
                                                     </button>

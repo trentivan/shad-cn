@@ -27,7 +27,7 @@ function formatearFechaParaUsuario(date: Date): string {
 
 export default function SumarFechasPage() {
     const [fechaBaseInput, setFechaBaseInput] = useState<string>('');
-    const [horasASumar, setHorasASumar] = useState<number | null>(null);
+    const [horasASumar, setHorasASumar] = useState<string>(''); // Cambia a string
     const [fechaResultado, setFechaResultado] = useState<string>('');
     const [error, setError] = useState<string>('');
 
@@ -37,9 +37,9 @@ export default function SumarFechasPage() {
         setFechaResultado('');
     };
 
+    // Cambia el handler para aceptar HH:mm
     const handleHorasASumarInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const value = parseInt(event.target.value, 10);
-        setHorasASumar(isNaN(value) ? null : value);
+        setHorasASumar(event.target.value);
         setError('');
         setFechaResultado('');
     };
@@ -53,8 +53,8 @@ export default function SumarFechasPage() {
             return;
         }
 
-        if (horasASumar === null) {
-            setError("Por favor, ingrese la cantidad de horas a sumar.");
+        if (!horasASumar) {
+            setError("Por favor, ingrese las horas a sumar en formato HH:mm.");
             return;
         }
 
@@ -66,8 +66,21 @@ export default function SumarFechasPage() {
                 return;
             }
 
+            // Procesar horasASumar en formato HH:mm
+            const [horasStr, minutosStr] = horasASumar.split(':');
+            const horas = parseInt(horasStr, 10) || 0;
+            const minutos = minutosStr ? parseInt(minutosStr, 10) : 0;
+
+            if (isNaN(horas) || isNaN(minutos)) {
+                setError("Formato de horas a sumar incorrecto (usa HH:mm).");
+                return;
+            }
+
             const fechaResultadoDate = new Date(fechaBaseDate.getTime());
-            fechaResultadoDate.setHours(fechaBaseDate.getHours() + horasASumar);            setFechaResultado(formatearFechaParaUsuario(fechaResultadoDate));
+            fechaResultadoDate.setHours(fechaResultadoDate.getHours() + horas);
+            fechaResultadoDate.setMinutes(fechaResultadoDate.getMinutes() + minutos);
+
+            setFechaResultado(formatearFechaParaUsuario(fechaResultadoDate));
 
         } catch (e: unknown) {
             setError("Error al procesar la fecha: " + (e instanceof Error ? e.message : 'Error desconocido'));
@@ -93,14 +106,14 @@ export default function SumarFechasPage() {
                 />
 
                 <label htmlFor="horasASumar" style={{ display: 'block', marginBottom: '5px' }}>
-                    Horas a Sumar:
+                    Horas a Sumar (HH:mm):
                 </label>
                 <input
-                    type="number"
+                    type="text"
                     id="horasASumar"
-                    value={horasASumar === null ? '' : horasASumar}
+                    value={horasASumar}
                     onChange={handleHorasASumarInputChange}
-                    placeholder="Ej: 24"
+                    placeholder="Ej: 24:30"
                     style={{ padding: '8px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ccc', width: '150px', marginBottom: '10px' }}
                 />
 

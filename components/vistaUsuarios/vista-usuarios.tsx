@@ -135,8 +135,7 @@ export default function UsersPage() {
         if (!editingUser) return;
         setUpdateError(null);
         try {
-            const updatedUser = await apiUpdateUser(editingUser.id, updatedUserData);
-            setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
+            const updatedUser = await apiUpdateUser(editingUser.id, updatedUserData);            setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
             setIsEditing(false);
             setEditingUser(null);
         } catch (err: unknown) {
@@ -149,8 +148,7 @@ export default function UsersPage() {
     // Confirma la eliminación y actualiza el estado
     const handleDelete = async (id: number) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
-            setDeleteError(null);
-            try {
+            setDeleteError(null);            try {
                 await apiDeleteUser(id);
                 setUsers(users.filter(user => user.id !== id));
             } catch (err: unknown) {
@@ -186,29 +184,25 @@ export default function UsersPage() {
     // y limpia los datos del usuario que se está editando
     const handleCloseEditUserModal = () => {
         setIsEditing(false);
-    };
-
-    // Maneja el cambio de datos en campos de entrada
+    };    // Maneja el cambio de datos en campos de entrada
     // para el nuevo usuario
     const handleNewUserInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        let processedValue: string | undefined = value;
+        let processedValue: string | number | undefined = value;
         if (name === 'agenciaId') {
-            processedValue = value === '' ? undefined : value;
+            processedValue = value === '' ? undefined : Number(value);
         }
         setNewUserData(prevData => ({
             ...prevData,
             [name]: processedValue,
         }));
-    };
-
-    // Maneja el cambio de datos en campos de entrada
+    };    // Maneja el cambio de datos en campos de entrada
     // para el usuario que se está editando
     const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        let processedValue: string | undefined = value;
+        let processedValue: string | number | undefined = value;
         if (name === 'agenciaId') {
-            processedValue = value === '' ? undefined : value;
+            processedValue = value === '' ? undefined : Number(value);
         }
         if (editingUser) {
             setEditingUser(prevUser => prevUser ? {
@@ -238,8 +232,7 @@ export default function UsersPage() {
 
             const newUser = await response.json();
             setUsers([...users, newUser]);
-            setIsCreatingNewUser(false);
-        } catch (error: unknown) {
+            setIsCreatingNewUser(false);        } catch (error: unknown) {
             console.error('Error al crear el usuario:', error);
             setCreationError('Error al crear el usuario');
         }
@@ -331,7 +324,7 @@ export default function UsersPage() {
                                 </select>
                             </div>
                             <div className="flex items-center justify-between">
-                                <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                <button type="submit" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                                     Crear Usuario
                                 </button>
                                 <button type="button" onClick={handleCloseNewUserModal} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
@@ -344,7 +337,7 @@ export default function UsersPage() {
 
                 {/* Formulario para editar usuario */}
                 {isEditing && (
-                    <div className="bg-white rounded-lg shadow-md p-6 mb-8 max-w-md">
+                    <div className="bg-white rounded-lg shadow-md p-6 mb-8 max-w-">
                         <h2 className="text-xl font-bold text-gray-800 mb-4">Modificar Usuario</h2>
                         {creationError && <div className="text-red-500 mb-4">{creationError}</div>}
                         <form onSubmit={(e) => {
@@ -429,7 +422,7 @@ export default function UsersPage() {
                             <div className="flex items-center justify-between">
                                 <button 
                                     type="submit" 
-                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                                     Modificar Usuario
                                 </button>
                                 <button 
