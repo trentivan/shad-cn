@@ -21,8 +21,6 @@ function convertirFechaHora(fechaHoraString: string): Date {
     return new Date(anio, mes, dia, hora, minuto);
 }
 
-
-
 export default function DataTable() {
     const [registros, setRegistros] = useState<tablaDeLogistica[]>([]);
     const [loading, setLoading] = useState(true);
@@ -109,15 +107,14 @@ export default function DataTable() {
                 const nuevosRegistros = [...prevRegistros, newRegistroData];
                 return nuevosRegistros.sort((a, b) => {
                     const fechaA = new Date(a.eta).getTime();
-                    const fechaB = new Date(b.eta).getTime();
-                    return fechaA - fechaB;
+                    const fechaB = new Date(b.eta).getTime();                    return fechaA - fechaB;
                 });
             });
 
-            setIsCreatingNewRegister(false);        } catch (error: unknown) {
+            setIsCreatingNewRegister(false);
+        } catch (error: unknown) {
             console.error('Error al crear registro:', error);
-            setCreationError('Error al crear registro');
-        }
+            setCreationError('Error al crear registro');        }
     };
 
     const handleCloseNewUserModal = () => {
@@ -125,7 +122,7 @@ export default function DataTable() {
     };
 
     const [menuOpenId, setMenuOpenId] = useState<number | null>(null);    // Ejemplo de handlers (debes implementar la lógica real)
-    const handleEdit = (_registro: tablaDeLogistica) => {
+    const handleEdit = () => {
         // Tu lógica para editar
         setMenuOpenId(null);
     };
@@ -134,12 +131,12 @@ export default function DataTable() {
         if (window.confirm('¿Estás seguro de que deseas eliminar este registro?')) {
             setError(null);
             try {
-                const response = await fetch(`/api/tablaDeLogistica/${id}`, {
-                    method: 'DELETE',
+                const response = await fetch(`/api/tablaDeLogistica/${id}`, {                    method: 'DELETE',
                 });
                 if (!response.ok) {
                     throw new Error('Error al eliminar el registro');
-                }                setRegistros(registros.filter(registro => registro.id !== id));
+                }
+                setRegistros(registros.filter(registro => registro.id !== id));
             } catch (err: unknown) {
                 setError('Error al eliminar el registro');
                 console.error(err);
@@ -149,17 +146,17 @@ export default function DataTable() {
         }
     };
 
-    useEffect(() => {
-        const fetchData = async () => {
+    useEffect(() => {        const fetchData = async () => {
             try {
                 const data = await getRegisters();
                 // Ordenar por ETA de menor a mayor
                 data.sort((a, b) => {
                     const fechaA = new Date(a.eta).getTime();
                     const fechaB = new Date(b.eta).getTime();
-                    return fechaA - fechaB;                });
+                    return fechaA - fechaB;
+                });
                 setRegistros(data);
-            } catch (_error) {
+            } catch {
                 setError('Error al cargar los registros');
             } finally {
                 setLoading(false);
@@ -370,10 +367,9 @@ export default function DataTable() {
                                                 <span className="text-xl">⋮</span>
                                             </button>
                                             {menuOpenId === registro.id && (
-                                                <div className="absolute top-0 right-18 w-32 bg-white border rounded shadow-lg z-10">
-                                                    <button
+                                                <div className="absolute top-0 right-18 w-32 bg-white border rounded shadow-lg z-10">                                                    <button
                                                         className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                                                        onClick={() => handleEdit(registro)}
+                                                        onClick={() => handleEdit()}
                                                     >
                                                         Editar
                                                     </button>
