@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Agencia } from '../../app/types/agencia';
-import { getAgencias, getAgencia, createAgencia, updateAgencia, deleteAgencia } from '../../app/data/agencias';
+import { getAgencias, createAgencia, updateAgencia, deleteAgencia } from '../../app/data/agencias';
 import { ListFilter } from "lucide-react";
 
 export default function AgenciasPage() {
@@ -40,12 +40,11 @@ export default function AgenciasPage() {
     const [showColumnsMenu, setShowColumnsMenu] = useState(false);
     const columnsMenuRef = useRef<HTMLDivElement | null>(null);
 
-    useEffect(() => {
-        const fetchAgencias = async () => {
+    useEffect(() => {        const fetchAgencias = async () => {
             try {
                 const data = await getAgencias();
                 setAgencias(data);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 setError('Error al cargar las agencias');
                 console.error(err);
             } finally {
@@ -113,12 +112,11 @@ export default function AgenciasPage() {
     };
 
     const handleCreateNewAgencia = async () => {
-        setCreationError(null);
-        try {
+        setCreationError(null);        try {
             const newAgencia = await createAgencia(newAgenciaData);
             setAgencias([...agencias, newAgencia]);
             setIsCreatingNewAgencia(false);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error al crear la agencia:', error);
             setCreationError('Error al crear la agencia');
         }
@@ -154,11 +152,10 @@ export default function AgenciasPage() {
                 telefono: editingAgencia.telefono,
                 correo: editingAgencia.correo,
                 estado: editingAgencia.estado as 'Activo' | 'Inactivo',
-            });
-            setAgencias(agencias.map(ag => ag.id === updatedAgencia.id ? updatedAgencia : ag));
+            });            setAgencias(agencias.map(ag => ag.id === updatedAgencia.id ? updatedAgencia : ag));
             setIsEditingAgencia(false);
             setEditingAgencia(null);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error al actualizar la agencia:', error);
             setUpdateError('Error al actualizar la agencia');
         }
@@ -166,11 +163,10 @@ export default function AgenciasPage() {
 
     const handleDelete = async (id: number) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar esta agencia?')) {
-            setDeleteError(null);
-            try {
+            setDeleteError(null);            try {
                 await deleteAgencia(id);
                 setAgencias(agencias.filter(agencia => agencia.id !== id));
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('Error al eliminar la agencia:', error);
                 setDeleteError('Error al eliminar la agencia');
             }

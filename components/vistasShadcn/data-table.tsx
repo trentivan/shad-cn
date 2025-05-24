@@ -21,14 +21,7 @@ function convertirFechaHora(fechaHoraString: string): Date {
     return new Date(anio, mes, dia, hora, minuto);
 }
 
-function formatearFechaParaUsuario(date: Date): string {
-    const dia = String(date.getDate()).padStart(2, '0');
-    const mes = String(date.getMonth() + 1).padStart(2, '0'); // Sumamos 1 porque getMonth() es 0-indexado
-    const hora = String(date.getHours()).padStart(2, '0');
-    const minuto = String(date.getMinutes()).padStart(2, '0');
 
-    return `${dia}/${mes} ${hora}:${minuto}`;
-}
 
 export default function DataTable() {
     const [registros, setRegistros] = useState<tablaDeLogistica[]>([]);
@@ -121,8 +114,7 @@ export default function DataTable() {
                 });
             });
 
-            setIsCreatingNewRegister(false);
-        } catch (error: any) {
+            setIsCreatingNewRegister(false);        } catch (error: unknown) {
             console.error('Error al crear registro:', error);
             setCreationError('Error al crear registro');
         }
@@ -132,10 +124,8 @@ export default function DataTable() {
         setIsCreatingNewRegister(false);
     };
 
-    const [menuOpenId, setMenuOpenId] = useState<number | null>(null);
-
-    // Ejemplo de handlers (debes implementar la lógica real)
-    const handleEdit = (registro: tablaDeLogistica) => {
+    const [menuOpenId, setMenuOpenId] = useState<number | null>(null);    // Ejemplo de handlers (debes implementar la lógica real)
+    const handleEdit = (_registro: tablaDeLogistica) => {
         // Tu lógica para editar
         setMenuOpenId(null);
     };
@@ -149,9 +139,8 @@ export default function DataTable() {
                 });
                 if (!response.ok) {
                     throw new Error('Error al eliminar el registro');
-                }
-                setRegistros(registros.filter(registro => registro.id !== id));
-            } catch (err: any) {
+                }                setRegistros(registros.filter(registro => registro.id !== id));
+            } catch (err: unknown) {
                 setError('Error al eliminar el registro');
                 console.error(err);
             } finally {
@@ -168,10 +157,9 @@ export default function DataTable() {
                 data.sort((a, b) => {
                     const fechaA = new Date(a.eta).getTime();
                     const fechaB = new Date(b.eta).getTime();
-                    return fechaA - fechaB;
-                });
+                    return fechaA - fechaB;                });
                 setRegistros(data);
-            } catch (error) {
+            } catch (_error) {
                 setError('Error al cargar los registros');
             } finally {
                 setLoading(false);

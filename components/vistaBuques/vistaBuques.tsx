@@ -83,13 +83,12 @@ export default function BuquesPage() {
     // Maneja la actualización de un buque
     const handleUpdateBuque = async (updatedBuqueData: Partial<Buque>) => {
         if (!editingBuque) return;
-        setUpdateError(null);
-        try {
+        setUpdateError(null);        try {
             const updatedBuque = await apiUpdateBuque(editingBuque.id, updatedBuqueData);
             setBuques(buques.map(buque => buque.id === updatedBuque.id ? updatedBuque : buque));
             setIsEditing(false);
             setEditingBuque(null);
-        } catch (err: any) {
+        } catch (err: unknown) {
             setUpdateError('Error al actualizar el buque');
             console.error(err);
         }
@@ -98,11 +97,10 @@ export default function BuquesPage() {
     // Maneja la eliminación de un buque
     const handleDelete = async (id: number) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este buque?')) {
-            setDeleteError(null);
-            try {
+            setDeleteError(null);            try {
                 await apiDeleteBuque(id);
                 setBuques(buques.filter(buque => buque.id !== id));
-            } catch (err: any) {
+            } catch (err: unknown) {
                 setDeleteError('Error al eliminar el buque');
                 console.error(err);
             }
@@ -159,16 +157,16 @@ export default function BuquesPage() {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [showColumnsMenu]);
-
-    // Cierra el modal de editar buque
+    }, [showColumnsMenu]);    // Cierra el modal de editar buque
     const handleCloseEditBuqueModal = () => {
         setIsEditing(false);
-    };    // Maneja el cambio de datos en campos de entrada
+    };
+    
+    // Maneja el cambio de datos en campos de entrada
     // para el nuevo buque
     const handleNewBuqueInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        let processedValue: any = value;
+        let processedValue: string | number = value;
 
         if (name === 'agenciaId') {
             processedValue = parseInt(value, 10); // Convierte a entero, base 10
@@ -184,13 +182,11 @@ export default function BuquesPage() {
             ...prevData,
             [name]: processedValue,
         }));
-    };
-
-    // Maneja el cambio de datos en campos de entrada
+    };    // Maneja el cambio de datos en campos de entrada
     // para el buque que se está editando
     const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        let processedValue: any = value;
+        let processedValue: string | number | undefined = value;
 
         if (name === 'agenciaId') {
             processedValue = parseInt(value, 10);
@@ -233,17 +229,16 @@ export default function BuquesPage() {
             if (!response.ok) {
                 const error = await response.json();
                 throw new Error(error.message || 'Error al crear el buque');
-            }
-            // Respuesta exitosa, actualiza el estado de buques
+            }            // Respuesta exitosa, actualiza el estado de buques
             // con el nuevo buque creado
             const newBuque = await response.json();
             // Agrega el nuevo buque a la lista de buques
             // y cierra el modal
             setBuques([...buques, newBuque]);
             setIsCreatingNewBuque(false);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error al crear el buque:', error);
-            setCreationError(error.message || 'Error al crear el buque');
+            setCreationError(error instanceof Error ? error.message : 'Error al crear el buque');
         }
     };
 

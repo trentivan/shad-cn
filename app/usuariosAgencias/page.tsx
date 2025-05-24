@@ -17,7 +17,6 @@ export default function UsersPage() {
     // Estado para el usuario que se está editando
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [updateError, setUpdateError] = useState<string | null>(null);
-    const [isEditingUser, setIsEditingUser] = useState(false);
 
     const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -136,11 +135,10 @@ export default function UsersPage() {
         if (!editingUser) return;
         setUpdateError(null);
         try {
-            const updatedUser = await apiUpdateUser(editingUser.id, updatedUserData);
-            setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
+            const updatedUser = await apiUpdateUser(editingUser.id, updatedUserData);            setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
             setIsEditing(false);
             setEditingUser(null);
-        } catch (err: any) {
+        } catch (err: unknown) {
             setUpdateError('Error al actualizar el usuario');
             console.error(err);
         }
@@ -150,11 +148,10 @@ export default function UsersPage() {
     // Confirma la eliminación y actualiza el estado
     const handleDelete = async (id: number) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
-            setDeleteError(null);
-            try {
+            setDeleteError(null);            try {
                 await apiDeleteUser(id);
                 setUsers(users.filter(user => user.id !== id));
-            } catch (err: any) {
+            } catch (err: unknown) {
                 setDeleteError('Error al eliminar el usuario');
                 console.error(err);
             }
@@ -187,13 +184,11 @@ export default function UsersPage() {
     // y limpia los datos del usuario que se está editando
     const handleCloseEditUserModal = () => {
         setIsEditing(false);
-    };
-
-    // Maneja el cambio de datos en campos de entrada
+    };    // Maneja el cambio de datos en campos de entrada
     // para el nuevo usuario
     const handleNewUserInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        let processedValue: any = value;
+        let processedValue: string | number | undefined = value;
         if (name === 'agenciaId') {
             processedValue = value === '' ? undefined : Number(value);
         }
@@ -201,13 +196,11 @@ export default function UsersPage() {
             ...prevData,
             [name]: processedValue,
         }));
-    };
-
-    // Maneja el cambio de datos en campos de entrada
+    };    // Maneja el cambio de datos en campos de entrada
     // para el usuario que se está editando
     const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        let processedValue: any = value;
+        let processedValue: string | number | undefined = value;
         if (name === 'agenciaId') {
             processedValue = value === '' ? undefined : Number(value);
         }
@@ -239,8 +232,7 @@ export default function UsersPage() {
 
             const newUser = await response.json();
             setUsers([...users, newUser]);
-            setIsCreatingNewUser(false);
-        } catch (error: any) {
+            setIsCreatingNewUser(false);        } catch (error: unknown) {
             console.error('Error al crear el usuario:', error);
             setCreationError('Error al crear el usuario');
         }

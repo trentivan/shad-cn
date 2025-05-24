@@ -19,12 +19,11 @@ export default function LoginPage() {
             });
             if (!res.ok) {
                 setError('Credenciales incorrectas');
-                return;
-            }
+                return;            }
             // Aquí podrías guardar el usuario en localStorage o en un contexto global
             // const user = await res.json();
             router.push('/'); // Redirige a la página principal
-        } catch (err) {
+        } catch {
             setError('Error al iniciar sesión');
         }
     };

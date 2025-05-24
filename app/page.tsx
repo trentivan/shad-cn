@@ -1,5 +1,4 @@
 import { AppSidebar } from "@/components/vistasShadcn/app-sidebar"
-import { ChartAreaInteractive } from "@/components/vistasShadcn/chart-area-interactive"
 import TablaLogisticaBuques from "@/components/vistasShadcn/data-table"
 import { SiteHeader } from "@/components/vistasShadcn/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"

@@ -67,12 +67,10 @@ export default function SumarFechasPage() {
             }
 
             const fechaResultadoDate = new Date(fechaBaseDate.getTime());
-            fechaResultadoDate.setHours(fechaBaseDate.getHours() + horasASumar);
+            fechaResultadoDate.setHours(fechaBaseDate.getHours() + horasASumar);            setFechaResultado(formatearFechaParaUsuario(fechaResultadoDate));
 
-            setFechaResultado(formatearFechaParaUsuario(fechaResultadoDate));
-
-        } catch (e: any) {
-            setError("Error al procesar la fecha: " + e.message);
+        } catch (e: unknown) {
+            setError("Error al procesar la fecha: " + (e instanceof Error ? e.message : 'Error desconocido'));
         }
     };
 
