@@ -8,7 +8,7 @@ export async function GET() {
   try {
     const buques = await prisma.buque.findMany();
     return NextResponse.json(buques);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error al obtener los buques:', error);
     return NextResponse.json({ message: 'Error al obtener los buques' }, { status: 500 });
   } finally {
@@ -50,10 +50,8 @@ export async function POST(request: Request) {
           connect: { id: agenciaId },
         },
       },
-    });
-
-    return NextResponse.json(nuevoBuque, { status: 201 });
-  } catch (error: any) {
+    });    return NextResponse.json(nuevoBuque, { status: 201 });
+  } catch (error: unknown) {
     console.error('Error al crear el buque:', error);
     return NextResponse.json({ message: 'Error al crear el buque' }, { status: 500 });
   } finally {
