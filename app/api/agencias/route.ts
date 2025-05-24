@@ -9,7 +9,7 @@ export async function GET() {
   try {
     const agencias = await prisma.agencia.findMany();
     return NextResponse.json(agencias);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error al obtener las agencias:', error);
     return NextResponse.json({ message: 'Error al obtener las agencias' }, { status: 500 });
   } finally {
@@ -27,10 +27,8 @@ export async function POST(request: Request) {
 
     const nuevaAgencia = await prisma.agencia.create({
       data: body,
-    });
-
-    return NextResponse.json(nuevaAgencia, { status: 201 });
-  } catch (error: any) {
+    });    return NextResponse.json(nuevaAgencia, { status: 201 });
+  } catch (error: unknown) {
     console.error('Error al crear la agencia:', error);
     return NextResponse.json({ message: 'Error al crear la agencia' }, { status: 500 });
   } finally {
