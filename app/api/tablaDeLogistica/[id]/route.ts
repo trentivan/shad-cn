@@ -21,10 +21,8 @@ export async function GET(
 
     if (!tablaDeLogistica) {
       return NextResponse.json({ message: 'Tabla de logística no encontrada' }, { status: 404 });
-    }
-
-    return NextResponse.json(tablaDeLogistica);
-  } catch (error: any) {
+    }    return NextResponse.json(tablaDeLogistica);
+  } catch (error: unknown) {
     console.error('Error al obtener la tabla de logística:', error);
     return NextResponse.json({ message: 'Error al obtener la tabla de logística' }, { status: 500 });
   } finally {
@@ -42,11 +40,10 @@ export async function PUT(
     return NextResponse.json({ message: 'ID de tabla de logística inválido' }, { status: 400 });
   }
 
-  try {
-    const body: Partial<tablaDeLogistica> = await request.json();
+  try {    const body: Partial<tablaDeLogistica> = await request.json();
 
     // Remover id del body para que no se incluya en data
-    const { id: bodyId, ...updateData } = body;
+    const { id, ...updateData } = body;
 
     // Convert loa to number if present and not already a number
     const fixedUpdateData = {
@@ -57,10 +54,8 @@ export async function PUT(
     const updatedTablaDeLogistica = await prisma.logisticTable.update({
       where: { id },
       data: fixedUpdateData,
-    });
-
-    return NextResponse.json(updatedTablaDeLogistica);
-  } catch (error: any) {
+    });    return NextResponse.json(updatedTablaDeLogistica);
+  } catch (error: unknown) {
     console.error('Error al actualizar la tabla de logística:', error);
     return NextResponse.json({ message: 'Error al actualizar la tabla de logística' }, { status: 500 });
   } finally {
@@ -81,10 +76,8 @@ export async function DELETE(
   try {
     const deletedTablaDeLogistica = await prisma.logisticTable.delete({
       where: { id },
-    });
-
-    return NextResponse.json(deletedTablaDeLogistica);
-  } catch (error: any) {
+    });    return NextResponse.json(deletedTablaDeLogistica);
+  } catch (error: unknown) {
     console.error('Error al eliminar la tabla de logística:', error);
     return NextResponse.json({ message: 'Error al eliminar la tabla de logística' }, { status: 500 });
   } finally {
