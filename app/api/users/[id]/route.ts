@@ -23,10 +23,8 @@ export async function GET(
 
     if (!user) {
       return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
-    }
-
-    return NextResponse.json(user);
-  } catch (error: any) {
+    }    return NextResponse.json(user);
+  } catch (error: unknown) {
     console.error('Error al obtener el usuario:', error);
     return NextResponse.json({ message: 'Error al obtener el usuario de la base de datos' }, { status: 500 });
   } finally {
@@ -50,9 +48,8 @@ export async function PUT(
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: body,
-    });
-    return NextResponse.json(updatedUser);
-  } catch (error: any) {
+    });    return NextResponse.json(updatedUser);
+  } catch (error: unknown) {
     console.error('Error al actualizar el usuario:', error);
     return NextResponse.json({ message: 'Error al actualizar el usuario en la base de datos' }, { status: 500 });
   } finally {
@@ -74,9 +71,8 @@ export async function DELETE(
   try {
     await prisma.user.delete({
       where: { id: userId },
-    });
-    return NextResponse.json({ message: 'Usuario eliminado correctamente' }, { status: 200 });
-  } catch (error: any) {
+    });    return NextResponse.json({ message: 'Usuario eliminado correctamente' }, { status: 200 });
+  } catch (error: unknown) {
     console.error('Error al eliminar el usuario:', error);
     return NextResponse.json({ message: 'Error al eliminar el usuario de la base de datos' }, { status: 500 });
   } finally {

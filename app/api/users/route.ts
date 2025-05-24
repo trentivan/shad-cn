@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse} from 'next/server';
 // import prisma from '../../../lib/prisma';
 import { PrismaClient } from '@prisma/client';
 import { User } from '@/app/types/usuarios';
@@ -9,7 +9,7 @@ export async function GET() {
     try {
         const users = await prisma.user.findMany();
         return NextResponse.json(users);
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { error: 'Error al obtener usuarios' },
             { status: 500 }
@@ -31,10 +31,8 @@ export async function POST(request: Request) {
   
       const newUser = await prisma.user.create({
         data: body,
-      });
-  
-      return NextResponse.json(newUser, { status: 201 }); // 201 Created
-    } catch (error: any) {
+      });      return NextResponse.json(newUser, { status: 201 }); // 201 Created
+    } catch (error: unknown) {
       console.error('Error al crear el usuario:', error);
       return NextResponse.json({ message: 'Error al crear el usuario en la base de datos' }, { status: 500 });
     } finally {
