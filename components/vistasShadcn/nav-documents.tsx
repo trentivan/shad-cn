@@ -2,7 +2,6 @@
 
 import {
   FolderIcon,
-  MoreHorizontalIcon,
   ShareIcon,
   type LucideIcon,
 } from "lucide-react"
@@ -17,7 +16,6 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,

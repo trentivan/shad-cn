@@ -1,28 +1,36 @@
 // api/agencias/[id]/route.ts
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { Agencia } from '../../../types/agencia'; // Adjust the import path as needed
+// import { Agencia } from '../../../types/agencia';
 
 const prisma = new PrismaClient();
 
+type Props = {
+  params: {
+    id: string;
+  };
+};
+
 export async function GET(
-    request: Request,
-    { params }: { params: { id: string } }
+    request: NextRequest,
+    { params }: Props
 ) {
-    const id = parseInt(await Promise.resolve(params.id), 10);
-
-    if (isNaN(id)) {
-        return NextResponse.json({ message: 'ID de agencia inválido' }, { status: 400 });
-    }
-
     try {
+        const id = parseInt(params.id, 10);
+
+        if (isNaN(id)) {
+            return NextResponse.json({ message: 'ID inválido' }, { status: 400 });
+        }
+
         const agencia = await prisma.agencia.findUnique({
             where: { id },
         });
 
         if (!agencia) {
             return NextResponse.json({ message: 'Agencia no encontrada' }, { status: 404 });
-        }        return NextResponse.json(agencia);
+        }
+        
+        return NextResponse.json(agencia);
     } catch (error: unknown) {
         console.error('Error al obtener la agencia:', error);
         return NextResponse.json({ message: 'Error al obtener la agencia' }, { status: 500 });
@@ -32,20 +40,20 @@ export async function GET(
 }
 
 export async function PUT(
-    request: Request,
-    { params }: { params: { id: string } }
+    request: NextRequest,
+    { params }: Props
 ) {
-    const id = parseInt(await Promise.resolve(params.id), 10);
-
-    if (isNaN(id)) {
-        return NextResponse.json({ message: 'ID de agencia inválido' }, { status: 400 });
-    }
-
     try {
-        const body: Partial<Agencia> = await request.json();
+        const id = parseInt(params.id, 10);
+
+        if (isNaN(id)) {
+            return NextResponse.json({ message: 'ID de agencia inválido' }, { status: 400 });
+        }
+
+        const data = await request.json();
         const updatedAgencia = await prisma.agencia.update({
             where: { id },
-            data: body,
+            data,
         });        return NextResponse.json(updatedAgencia);
     } catch (error: unknown) {
         console.error('Error al actualizar la agencia:', error);
@@ -56,16 +64,16 @@ export async function PUT(
 }
 
 export async function DELETE(
-    request: Request,
-    { params }: { params: { id: string } }
+    request: NextRequest,
+    { params }: Props
 ) {
-    const id = parseInt(await Promise.resolve(params.id), 10);
-
-    if (isNaN(id)) {
-        return NextResponse.json({ message: 'ID de agencia inválido' }, { status: 400 });
-    }
-
     try {
+        const id = parseInt(params.id, 10);
+
+        if (isNaN(id)) {
+            return NextResponse.json({ message: 'ID de agencia inválido' }, { status: 400 });
+        }
+
         await prisma.agencia.delete({
             where: { id },
         });        return NextResponse.json({ message: 'Agencia eliminada correctamente' }, { status: 200 });

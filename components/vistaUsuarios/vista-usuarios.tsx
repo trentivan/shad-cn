@@ -17,7 +17,6 @@ export default function UsersPage() {
     // Estado para el usuario que se está editando
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [updateError, setUpdateError] = useState<string | null>(null);
-    const [isEditingUser, setIsEditingUser] = useState(false);
 
     const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -140,7 +139,7 @@ export default function UsersPage() {
             setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
             setIsEditing(false);
             setEditingUser(null);
-        } catch (err: any) {
+        } catch (err: unknown) {
             setUpdateError('Error al actualizar el usuario');
             console.error(err);
         }
@@ -154,7 +153,7 @@ export default function UsersPage() {
             try {
                 await apiDeleteUser(id);
                 setUsers(users.filter(user => user.id !== id));
-            } catch (err: any) {
+            } catch (err: unknown) {
                 setDeleteError('Error al eliminar el usuario');
                 console.error(err);
             }
@@ -193,9 +192,9 @@ export default function UsersPage() {
     // para el nuevo usuario
     const handleNewUserInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        let processedValue: any = value;
+        let processedValue: string | undefined = value;
         if (name === 'agenciaId') {
-            processedValue = value === '' ? undefined : Number(value);
+            processedValue = value === '' ? undefined : value;
         }
         setNewUserData(prevData => ({
             ...prevData,
@@ -207,9 +206,9 @@ export default function UsersPage() {
     // para el usuario que se está editando
     const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        let processedValue: any = value;
+        let processedValue: string | undefined = value;
         if (name === 'agenciaId') {
-            processedValue = value === '' ? undefined : Number(value);
+            processedValue = value === '' ? undefined : value;
         }
         if (editingUser) {
             setEditingUser(prevUser => prevUser ? {
@@ -240,7 +239,7 @@ export default function UsersPage() {
             const newUser = await response.json();
             setUsers([...users, newUser]);
             setIsCreatingNewUser(false);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error al crear el usuario:', error);
             setCreationError('Error al crear el usuario');
         }
