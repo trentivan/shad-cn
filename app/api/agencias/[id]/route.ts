@@ -22,10 +22,8 @@ export async function GET(
 
         if (!agencia) {
             return NextResponse.json({ message: 'Agencia no encontrada' }, { status: 404 });
-        }
-
-        return NextResponse.json(agencia);
-    } catch (error: any) {
+        }        return NextResponse.json(agencia);
+    } catch (error: unknown) {
         console.error('Error al obtener la agencia:', error);
         return NextResponse.json({ message: 'Error al obtener la agencia' }, { status: 500 });
     } finally {
@@ -48,9 +46,8 @@ export async function PUT(
         const updatedAgencia = await prisma.agencia.update({
             where: { id },
             data: body,
-        });
-        return NextResponse.json(updatedAgencia);
-    } catch (error: any) {
+        });        return NextResponse.json(updatedAgencia);
+    } catch (error: unknown) {
         console.error('Error al actualizar la agencia:', error);
         return NextResponse.json({ message: 'Error al actualizar la agencia' }, { status: 500 });
     } finally {
@@ -71,9 +68,8 @@ export async function DELETE(
     try {
         await prisma.agencia.delete({
             where: { id },
-        });
-        return NextResponse.json({ message: 'Agencia eliminada correctamente' }, { status: 200 });
-    } catch (error: any) {
+        });        return NextResponse.json({ message: 'Agencia eliminada correctamente' }, { status: 200 });
+    } catch (error: unknown) {
         console.error('Error al eliminar la agencia:', error);
         return NextResponse.json({ message: 'Error al eliminar la agencia' }, { status: 500 });
     } finally {
