@@ -7,10 +7,8 @@ export const getUsers = async (): Promise<User[]> => {
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'Error al obtener usuarios');
-        }
-
-        const data: User[] = await response.json();
-        return data.map((user: any) => ({
+        }        const data: User[] = await response.json();
+        return data.map((user: User) => ({
             id: user.id,
             nombre: user.nombre,
             correo: user.correo,
@@ -19,10 +17,9 @@ export const getUsers = async (): Promise<User[]> => {
             estado: user.estado,
             agenciaId: user.agenciaId, 
             createdAt: new Date(user.createdAt),
-            updatedAt: new Date(user.updatedAt),
-        }));
-    } catch (error: any) {
-        console.error('Error fetching users:', error.message);
+            updatedAt: new Date(user.updatedAt),        }));
+    } catch (error: unknown) {
+        console.error('Error fetching users:', error instanceof Error ? error.message : 'Unknown error');
         throw new Error('Error al obtener usuarios');
     }
 };

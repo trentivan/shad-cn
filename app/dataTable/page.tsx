@@ -21,14 +21,14 @@ function convertirFechaHora(fechaHoraString: string): Date {
     return new Date(anio, mes, dia, hora, minuto);
 }
 
-function formatearFechaParaUsuario(date: Date): string {
-    const dia = String(date.getDate()).padStart(2, '0');
-    const mes = String(date.getMonth() + 1).padStart(2, '0'); // Sumamos 1 porque getMonth() es 0-indexado
-    const hora = String(date.getHours()).padStart(2, '0');
-    const minuto = String(date.getMinutes()).padStart(2, '0');
+// function formatearFechaParaUsuario(date: Date): string {
+//     const dia = String(date.getDate()).padStart(2, '0');
+//     const mes = String(date.getMonth() + 1).padStart(2, '0'); // Sumamos 1 porque getMonth() es 0-indexado
+//     const hora = String(date.getHours()).padStart(2, '0');
+//     const minuto = String(date.getMinutes()).padStart(2, '0');
 
-    return `${dia}/${mes} ${hora}:${minuto}`;
-}
+//     return `${dia}/${mes} ${hora}:${minuto}`;
+// }
 
 export default function DataTable() {
     const [registros, setRegistros] = useState<tablaDeLogistica[]>([]);
@@ -119,10 +119,8 @@ export default function DataTable() {
                     const fechaB = new Date(b.eta).getTime();
                     return fechaA - fechaB;
                 });
-            });
-
-            setIsCreatingNewRegister(false);
-        } catch (error: any) {
+            });            setIsCreatingNewRegister(false);
+        } catch (error: unknown) {
             console.error('Error al crear registro:', error);
             setCreationError('Error al crear registro');
         }
@@ -130,12 +128,10 @@ export default function DataTable() {
 
     const handleCloseNewUserModal = () => {
         setIsCreatingNewRegister(false);
-    };
-
-    const [menuOpenId, setMenuOpenId] = useState<number | null>(null);
+    };    const [menuOpenId, setMenuOpenId] = useState<number | null>(null);
 
     // Ejemplo de handlers (debes implementar la lógica real)
-    const handleEdit = (registro: tablaDeLogistica) => {
+    const handleEdit = () => {
         // Tu lógica para editar
         setMenuOpenId(null);
     };
@@ -148,10 +144,9 @@ export default function DataTable() {
                     method: 'DELETE',
                 });
                 if (!response.ok) {
-                    throw new Error('Error al eliminar el registro');
-                }
+                    throw new Error('Error al eliminar el registro');                }
                 setRegistros(registros.filter(registro => registro.id !== id));
-            } catch (err: any) {
+            } catch (err: unknown) {
                 setError('Error al eliminar el registro');
                 console.error(err);
             } finally {
@@ -168,10 +163,9 @@ export default function DataTable() {
                 data.sort((a, b) => {
                     const fechaA = new Date(a.eta).getTime();
                     const fechaB = new Date(b.eta).getTime();
-                    return fechaA - fechaB;
-                });
+                    return fechaA - fechaB;                });
                 setRegistros(data);
-            } catch (error) {
+            } catch {
                 setError('Error al cargar los registros');
             } finally {
                 setLoading(false);
@@ -382,10 +376,9 @@ export default function DataTable() {
                                                 <span className="text-xl">⋮</span>
                                             </button>
                                             {menuOpenId === registro.id && (
-                                                <div className="absolute top-0 right-18 w-32 bg-white border rounded shadow-lg z-10">
-                                                    <button
+                                                <div className="absolute top-0 right-18 w-32 bg-white border rounded shadow-lg z-10">                                                    <button
                                                         className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                                                        onClick={() => handleEdit(registro)}
+                                                        onClick={() => handleEdit()}
                                                     >
                                                         Editar
                                                     </button>
