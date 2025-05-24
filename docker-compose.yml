@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: mi_pimeva_postgres
+    environment:
+      POSTGRES_USER: admin         # Usuario de la DB
+      POSTGRES_PASSWORD: 123  # Contraseña
+      POSTGRES_DB: pimevadb               # Nombre de la DB
+    ports:
+      - "5432:5432"                   # Puerto expuesto (localhost:5432)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Persistencia de datos
+
+volumes:
+  postgres_data:

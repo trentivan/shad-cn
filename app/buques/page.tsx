@@ -1,6 +1,5 @@
+import BuquesPage from "@/components/vistaBuques/vistaBuques";
 import { AppSidebar } from "@/components/vistasShadcn/app-sidebar"
-import { ChartAreaInteractive } from "@/components/vistasShadcn/chart-area-interactive"
-import TablaLogisticaBuques from "@/components/vistasShadcn/data-table"
 import { SiteHeader } from "@/components/vistasShadcn/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
@@ -17,11 +16,11 @@ export default function Page() {
               <div className="px-4 lg:px-6">
                 {/* <ChartAreaInteractive /> */}
               </div>
-              <TablaLogisticaBuques />
+              <BuquesPage />
             </div>
           </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

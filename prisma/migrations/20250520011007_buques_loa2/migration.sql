@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Buque" ALTER COLUMN "loa" DROP NOT NULL;
