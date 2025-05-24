@@ -44,7 +44,7 @@ export async function POST(request: Request) {
         const nuevoRegistroLogistica = await prisma.logisticTable.create({
             data: {
                 vessel: data.vessel,
-                loa: String(data.loa), // <-- conversión a string
+                loa: Number(data.loa), // <-- conversión a número
                 operationTime: data.operationTime,
                 eta: etaDate,
                 pob: pobDate,

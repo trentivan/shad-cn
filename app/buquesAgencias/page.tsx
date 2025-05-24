@@ -89,7 +89,7 @@ export default function BuquesPage() {
             setBuques(buques.map(buque => buque.id === updatedBuque.id ? updatedBuque : buque));
             setIsEditing(false);
             setEditingBuque(null);
-        } catch (err: any) {
+        } catch (err: unknown) {
             setUpdateError('Error al actualizar el buque');
             console.error(err);
         }
@@ -102,7 +102,7 @@ export default function BuquesPage() {
             try {
                 await apiDeleteBuque(id);
                 setBuques(buques.filter(buque => buque.id !== id));
-            } catch (err: any) {
+            } catch (err: unknown) {
                 setDeleteError('Error al eliminar el buque');
                 console.error(err);
             }
@@ -168,7 +168,7 @@ export default function BuquesPage() {
     // para el nuevo buque
     const handleNewBuqueInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        let processedValue: any = value;
+        let processedValue: string | number = value;
 
         if (name === 'agenciaId') {
             processedValue = parseInt(value, 10); // Convierte a entero, base 10
@@ -184,13 +184,11 @@ export default function BuquesPage() {
             ...prevData,
             [name]: processedValue,
         }));
-    };
-
-    // Maneja el cambio de datos en campos de entrada
+    };    // Maneja el cambio de datos en campos de entrada
     // para el buque que se está editando
     const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        let processedValue: any = value;
+        let processedValue: string | number | undefined = value;
 
         if (name === 'agenciaId') {
             processedValue = parseInt(value, 10);
@@ -234,16 +232,12 @@ export default function BuquesPage() {
                 const error = await response.json();
                 throw new Error(error.message || 'Error al crear el buque');
             }
-            // Respuesta exitosa, actualiza el estado de buques
-            // con el nuevo buque creado
-            const newBuque = await response.json();
-            // Agrega el nuevo buque a la lista de buques
-            // y cierra el modal
-            setBuques([...buques, newBuque]);
+            
+            // cierra el modal            setBuques([...buques, newBuque]);
             setIsCreatingNewBuque(false);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error al crear el buque:', error);
-            setCreationError(error.message || 'Error al crear el buque');
+            setCreationError(error instanceof Error ? error.message : 'Error al crear el buque');
         }
     };
 
