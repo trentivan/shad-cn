@@ -198,7 +198,6 @@ export default function DataTable() {
             const datosActualizados = await getRegisters();
             datosActualizados.sort((a, b) => new Date(a.eta).getTime() - new Date(b.eta).getTime());
             setRegistros(datosActualizados);
-            setUltimaModificacion(new Date());
         } catch (error: unknown) {
             console.error('Error al crear registro:', error);
             setCreationError('Error al crear registro');
@@ -354,7 +353,6 @@ export default function DataTable() {
             }
 
             setIsEditing(false);
-            setUltimaModificacion(new Date());
 
             // 1. Vuelve a cargar los registros desde el backend para tener los datos actualizados
             let nuevosDatos = await getRegisters();
@@ -469,8 +467,6 @@ export default function DataTable() {
             }
         }
     }, []);
-
-    const [ultimaModificacion, setUltimaModificacion] = useState<Date | null>(null);
 
     if (loading) {
         return (
@@ -820,20 +816,6 @@ export default function DataTable() {
                         </table>
                     </div>
                 </div>
-                {ultimaModificacion && (
-                    <div className="mb-4 text-sm text-gray-600">
-                        Última modificación:{" "}
-                        {ultimaModificacion.toLocaleString("es-MX", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          second: "2-digit",
-                          hour12: false,
-                        })}
-                      </div>
-                )}
             </div>
         </div>
     );
