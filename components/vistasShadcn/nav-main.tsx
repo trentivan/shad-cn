@@ -46,7 +46,7 @@ export function NavMain({ items }: NavMainProps) {
                 )}
               </SidebarMenuButton>
               {isOpen === item.title && (
-                <div className="pl-6 mt-1 space-y-1">
+                <ul className="pl-6 mt-1 space-y-1">
                   {item.items.map((subItem) => (
                     <SidebarMenuItem key={subItem.title} className="pl-2">
                       <SidebarMenuButton asChild>
@@ -57,7 +57,7 @@ export function NavMain({ items }: NavMainProps) {
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
-                </div>
+                </ul>
               )}
             </div>
           ) : (

@@ -159,10 +159,11 @@ export default function DataTable() {
 
     const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setRegistroEdit(prev => ({
-            ...prev,
-            [name]: value,
-        }));
+        setRegistroEdit(prev => {
+            const actualizado = { ...prev, [name]: value };
+            // Recalcula todos los campos dependientes al cambiar cualquier campo
+            return recalcularCampos(actualizado);
+        });
     };
 
     const handleUpdateRegistro = async () => {
@@ -189,9 +190,14 @@ export default function DataTable() {
             }
 
             const updated = await response.json();
-            setRegistros(registros =>
-                registros.map(r => (r.id === updated.id ? updated : r))
-            );
+            setRegistros(registros => {
+                const nuevos = registros.map(r => (r.id === updated.id ? updated : r));
+                return nuevos.sort((a, b) => {
+                    const fechaA = new Date(a.eta).getTime();
+                    const fechaB = new Date(b.eta).getTime();
+                    return fechaA - fechaB;
+                });
+            });
             setIsEditing(false);
         } catch (err) {
             alert('Error al actualizar el registro');
@@ -583,4 +589,41 @@ export default function DataTable() {
             </div>
         </div>
     );
+}
+
+function sumarHoras(fecha: Date, horas: number, minutos: number = 0): Date {
+    const nueva = new Date(fecha);
+    nueva.setHours(nueva.getHours() + horas);
+    nueva.setMinutes(nueva.getMinutes() + minutos);
+    return nueva;
+}
+
+function sumarOperationTime(fecha: Date, operationTime: string): Date {
+    const [horas, minutos] = operationTime.split(':').map(Number);
+    return sumarHoras(fecha, horas, minutos);
+}
+
+function recalcularCampos(registro: Omit<tablaDeLogistica, 'createdAt' | 'updatedAt'>): Omit<tablaDeLogistica, 'createdAt' | 'updatedAt'> {
+    const { eta, operationTime } = registro;
+
+    // Si no hay ETA o operationTime, no se puede calcular el resto
+    if (!eta || !operationTime) return registro;
+
+    const etaDate = convertirFechaHora(eta);
+    const pobDate = sumarHoras(etaDate, 1);
+    const etbDate = sumarHoras(pobDate, 1);
+    const etcDate = sumarOperationTime(etbDate, operationTime);
+    const etdDate = sumarHoras(etcDate, 1);
+
+    // Formatear de vuelta a string DD/MM HH:mm
+    const formatDate = (d: Date) =>
+        `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+    return {
+        ...registro,
+        pob: formatDate(pobDate),
+        etb: formatDate(etbDate),
+        etc: formatDate(etcDate),
+        etd: formatDate(etdDate),
+    };
 }

@@ -6,9 +6,10 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
-  const id = parseInt(await Promise.resolve(params.id), 10);
+  const { params } = await context;
+  const id = parseInt(params.id, 10);
 
   if (isNaN(id)) {
     return NextResponse.json({ message: 'ID de tabla de logística inválido' }, { status: 400 });
@@ -30,22 +31,18 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: Request, context: { params: { id: string } }) {
+  const { params } = context;
+  
   const id = parseInt(params.id, 10);
 
   if (isNaN(id)) {
     return NextResponse.json({ message: 'ID de tabla de logística inválido' }, { status: 400 });
   }
 
-  try {    const body: Partial<tablaDeLogistica> = await request.json();
-
-    // Remover id del body para que no se incluya en data
-    const { id, ...updateData } = body;
-
-    // Convert loa to number if present and not already a number
+  try {
+    const body: Partial<tablaDeLogistica> = await request.json();
+    const { id: _, ...updateData } = body;
     const fixedUpdateData = {
       ...updateData,
       loa: updateData.loa !== undefined ? Number(updateData.loa) : undefined,
@@ -54,7 +51,8 @@ export async function PUT(
     const updatedTablaDeLogistica = await prisma.logisticTable.update({
       where: { id },
       data: fixedUpdateData,
-    });    return NextResponse.json(updatedTablaDeLogistica);
+    });
+    return NextResponse.json(updatedTablaDeLogistica);
   } catch (error: unknown) {
     console.error('Error al actualizar la tabla de logística:', error);
     return NextResponse.json({ message: 'Error al actualizar la tabla de logística' }, { status: 500 });
@@ -65,8 +63,9 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { params } = await context;
   const id = parseInt(params.id, 10);
 
   if (isNaN(id)) {

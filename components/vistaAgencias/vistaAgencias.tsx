@@ -40,6 +40,8 @@ export default function AgenciasPage() {
     const [showColumnsMenu, setShowColumnsMenu] = useState(false);
     const columnsMenuRef = useRef<HTMLDivElement | null>(null);
 
+    const [actualizando, setActualizando] = useState(false);
+
     useEffect(() => {        const fetchAgencias = async () => {
             try {
                 const data = await getAgencias();
@@ -112,13 +114,17 @@ export default function AgenciasPage() {
     };
 
     const handleCreateNewAgencia = async () => {
-        setCreationError(null);        try {
+        setCreationError(null);
+        setActualizando(true); // Activa loader
+        try {
             const newAgencia = await createAgencia(newAgenciaData);
             setAgencias([...agencias, newAgencia]);
             setIsCreatingNewAgencia(false);
         } catch (error: unknown) {
             console.error('Error al crear la agencia:', error);
             setCreationError('Error al crear la agencia');
+        } finally {
+            setActualizando(false); // Desactiva loader
         }
     };
 
@@ -145,6 +151,7 @@ export default function AgenciasPage() {
 
     const handleUpdateAgencia = async () => {
         if (!editingAgencia) return;
+        setActualizando(true); // Activa loader
         try {
             const updatedAgencia = await updateAgencia(editingAgencia.id, {
                 nombre: editingAgencia.nombre,
@@ -152,23 +159,30 @@ export default function AgenciasPage() {
                 telefono: editingAgencia.telefono,
                 correo: editingAgencia.correo,
                 estado: editingAgencia.estado as 'Activo' | 'Inactivo',
-            });            setAgencias(agencias.map(ag => ag.id === updatedAgencia.id ? updatedAgencia : ag));
+            });
+            setAgencias(agencias.map(ag => ag.id === updatedAgencia.id ? updatedAgencia : ag));
             setIsEditingAgencia(false);
             setEditingAgencia(null);
         } catch (error: unknown) {
             console.error('Error al actualizar la agencia:', error);
             setUpdateError('Error al actualizar la agencia');
+        } finally {
+            setActualizando(false); // Desactiva loader
         }
     };
 
     const handleDelete = async (id: number) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar esta agencia?')) {
-            setDeleteError(null);            try {
+            setDeleteError(null);
+            setActualizando(true); // Activa loader
+            try {
                 await deleteAgencia(id);
                 setAgencias(agencias.filter(agencia => agencia.id !== id));
             } catch (error: unknown) {
                 console.error('Error al eliminar la agencia:', error);
                 setDeleteError('Error al eliminar la agencia');
+            } finally {
+                setActualizando(false); // Desactiva loader
             }
         }
     };
@@ -195,6 +209,20 @@ export default function AgenciasPage() {
             <div className="text-red-500 text-lg font-medium">{error}</div>
         </div>
     );
+
+    if (actualizando) {
+        return (
+            <div className="fixed inset-0 bg-gray-200 bg-opacity-70 flex items-center justify-center z-50">
+                <div className="bg-white p-8 rounded shadow text-lg font-semibold flex items-center gap-2">
+                    <svg className="animate-spin h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                    Actualizando datos...
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className='bg-gray-200 min-h-screen flex justify-center'>
@@ -268,8 +296,7 @@ export default function AgenciasPage() {
                             <div className="flex items-center justify-between">
                                 <button
                                     type="submit"
-                                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                                >
+                                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                                     Crear Agencia
                                 </button>
                                 <button

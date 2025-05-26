@@ -47,6 +47,8 @@ export default function UsersPage() {
     const [showColumnsMenu, setShowColumnsMenu] = useState(false);
     const columnsMenuRef = useRef<HTMLDivElement | null>(null);
 
+    const [actualizando, setActualizando] = useState(false);
+
     useEffect(() => {
         const fetchUsers = async () => {
             try {
@@ -134,13 +136,17 @@ export default function UsersPage() {
     const handleUpdateUser = async (updatedUserData: Partial<User>) => {
         if (!editingUser) return;
         setUpdateError(null);
+        setActualizando(true); // Activa loader
         try {
-            const updatedUser = await apiUpdateUser(editingUser.id, updatedUserData);            setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
+            const updatedUser = await apiUpdateUser(editingUser.id, updatedUserData);
+            setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
             setIsEditing(false);
             setEditingUser(null);
         } catch (err: unknown) {
             setUpdateError('Error al actualizar el usuario');
             console.error(err);
+        } finally {
+            setActualizando(false); // Desactiva loader
         }
     };
 
@@ -148,12 +154,16 @@ export default function UsersPage() {
     // Confirma la eliminación y actualiza el estado
     const handleDelete = async (id: number) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
-            setDeleteError(null);            try {
+            setDeleteError(null);
+            setActualizando(true); // Activa loader
+            try {
                 await apiDeleteUser(id);
                 setUsers(users.filter(user => user.id !== id));
             } catch (err: unknown) {
                 setDeleteError('Error al eliminar el usuario');
                 console.error(err);
+            } finally {
+                setActualizando(false); // Desactiva loader
             }
         }
     };
@@ -215,6 +225,7 @@ export default function UsersPage() {
     // Maneja la creación de un nuevo usuario
     const handleCreateNewUser = async () => {
         setCreationError(null);
+        setActualizando(true); // Activa loader
         try {
             const response = await fetch('/api/users', {
                 method: 'POST',
@@ -232,9 +243,12 @@ export default function UsersPage() {
 
             const newUser = await response.json();
             setUsers([...users, newUser]);
-            setIsCreatingNewUser(false);        } catch (error: unknown) {
+            setIsCreatingNewUser(false);
+        } catch (error: unknown) {
             console.error('Error al crear el usuario:', error);
             setCreationError('Error al crear el usuario');
+        } finally {
+            setActualizando(false); // Desactiva loader
         }
     };
 
@@ -266,6 +280,20 @@ export default function UsersPage() {
             <div className="text-red-500 text-lg font-medium">{error}</div>
         </div>
     );
+
+    if (actualizando) {
+        return (
+            <div className="fixed inset-0 bg-gray-200 bg-opacity-70 flex items-center justify-center z-50">
+                <div className="bg-white p-8 rounded shadow text-lg font-semibold flex items-center gap-2">
+                    <svg className="animate-spin h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                    Actualizando usuarios...
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className='bg-gray-200 min-h-screen flex justify-center'>
@@ -337,7 +365,7 @@ export default function UsersPage() {
 
                 {/* Formulario para editar usuario */}
                 {isEditing && (
-                    <div className="bg-white rounded-lg shadow-md p-6 mb-8 max-w-">
+                    <div className="bg-white rounded-lg shadow-md p-6 mb-8 max-w-md">
                         <h2 className="text-xl font-bold text-gray-800 mb-4">Modificar Usuario</h2>
                         {creationError && <div className="text-red-500 mb-4">{creationError}</div>}
                         <form onSubmit={(e) => {
@@ -346,25 +374,25 @@ export default function UsersPage() {
                         }}>
                             <div className="mb-4">
                                 <label htmlFor="nombre" className="block text-gray-700 text-sm font-bold mb-2">Nombre:</label>
-                                <input 
-                                    type="text" 
-                                    id="nombre" 
-                                    name="nombre" 
-                                    value={editingUser?.nombre} 
-                                    onChange={handleEditInputChange} 
+                                <input
+                                    type="text"
+                                    id="nombre"
+                                    name="nombre"
+                                    value={editingUser?.nombre}
+                                    onChange={handleEditInputChange}
                                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
                             </div>
                             <div className="mb-4">
                                 <label htmlFor="correo" className="block text-gray-700 text-sm font-bold mb-2">Correo:</label>
-                                <input 
-                                    type="email" 
-                                    id="correo" 
-                                    name="correo" 
-                                    value={editingUser?.correo} 
-                                    onChange={handleEditInputChange} 
+                                <input
+                                    type="email"
+                                    id="correo"
+                                    name="correo"
+                                    value={editingUser?.correo}
+                                    onChange={handleEditInputChange}
                                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
                             </div>
-                            <div className="mb-4">
+                            {/* <div className="mb-4">
                                 <label htmlFor="contrasena" className="block text-gray-700 text-sm font-bold mb-2">Contraseña:</label>
                                 <input 
                                     type="password" 
@@ -373,20 +401,20 @@ export default function UsersPage() {
                                     value={editingUser?.contrasena} 
                                     onChange={handleEditInputChange} 
                                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
-                            </div>
+                            </div> */}
                             <div className="mb-4">
                                 <label htmlFor="rol" className="block text-gray-700 text-sm font-bold mb-2">Rol:</label>
-                                <select 
-                                    id="rol" 
-                                    name="rol" 
-                                    value={editingUser?.rol} 
-                                    onChange={handleEditInputChange} 
+                                <select
+                                    id="rol"
+                                    name="rol"
+                                    value={editingUser?.rol}
+                                    onChange={handleEditInputChange}
                                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                                    
+
                                     <option value="colaborador">Colaborador</option>
-                                    <option value="admin">Admin</option>
+                                    <option value="admin">Administrador</option>
                                     <option value="externo">Externo</option>
-                                
+
                                 </select>
                             </div>
                             <div className="mb-4">
@@ -408,34 +436,34 @@ export default function UsersPage() {
                             </div>
                             <div className="mb-4">
                                 <label htmlFor="estado" className="block text-gray-700 text-sm font-bold mb-2">Estado:</label>
-                                <select 
-                                    id="estado" 
-                                    name="estado" 
-                                    value={editingUser?.estado} 
-                                    onChange={handleEditInputChange} 
+                                <select
+                                    id="estado"
+                                    name="estado"
+                                    value={editingUser?.estado}
+                                    onChange={handleEditInputChange}
                                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                                    
+
                                     <option value="Activo">Activo</option>
                                     <option value="Inactivo">Inactivo</option>
                                 </select>
                             </div>
                             <div className="flex items-center justify-between">
-                                <button 
-                                    type="submit" 
-                                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                <button
+                                    type="submit"
+                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                                     Modificar Usuario
                                 </button>
-                                <button 
-                                    type="button" 
-                                    onClick={handleCloseEditUserModal} 
+                                <button
+                                    type="button"
+                                    onClick={handleCloseEditUserModal}
                                     className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                                     Cancelar
                                 </button>
                             </div>
                         </form>
                     </div>
-                )}                
-                
+                )}
+
                 {/* Tabla de usuarios */}
                 <div className="bg-white rounded-lg shadow-md p-6 mb-8">
                     <div className="flex justify-between items-center mb-6">
@@ -486,9 +514,9 @@ export default function UsersPage() {
                                 >
                                     <ListFilter className="w-5 h-5" />
                                 </button>
-                                
+
                             </div>
-                            
+
                         </div>
                     </div>
 
@@ -509,7 +537,7 @@ export default function UsersPage() {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Rol</th>
                                     )}
                                     {visibleColumns.agencia && (
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Agencia ID</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Agencia</th>
                                     )}
                                     {visibleColumns.estado && (
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Estado</th>
@@ -527,7 +555,9 @@ export default function UsersPage() {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.correo}</td>
                                         )}
                                         {visibleColumns.rol && (
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">{user.rol}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
+                                                {user.rol === 'admin' ? 'Administrador' : user.rol.charAt(0).toUpperCase() + user.rol.slice(1)}
+                                            </td>
                                         )}
                                         {visibleColumns.agencia && (
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

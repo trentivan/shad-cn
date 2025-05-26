@@ -47,6 +47,8 @@ export default function BuquesPage() {
     });
     const [showColumnsMenu, setShowColumnsMenu] = useState(false);
 
+    const [actualizando, setActualizando] = useState(false);
+
     useEffect(() => {
         const fetchBuques = async () => {
             try {
@@ -83,7 +85,9 @@ export default function BuquesPage() {
     // Maneja la actualización de un buque
     const handleUpdateBuque = async (updatedBuqueData: Partial<Buque>) => {
         if (!editingBuque) return;
-        setUpdateError(null);        try {
+        setUpdateError(null);
+        setActualizando(true); // <--- Activa loader
+        try {
             const updatedBuque = await apiUpdateBuque(editingBuque.id, updatedBuqueData);
             setBuques(buques.map(buque => buque.id === updatedBuque.id ? updatedBuque : buque));
             setIsEditing(false);
@@ -91,18 +95,24 @@ export default function BuquesPage() {
         } catch (err: unknown) {
             setUpdateError('Error al actualizar el buque');
             console.error(err);
+        } finally {
+            setActualizando(false); // <--- Desactiva loader
         }
     };
 
     // Maneja la eliminación de un buque
     const handleDelete = async (id: number) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este buque?')) {
-            setDeleteError(null);            try {
+            setDeleteError(null);
+            setActualizando(true); // <--- Activa loader
+            try {
                 await apiDeleteBuque(id);
                 setBuques(buques.filter(buque => buque.id !== id));
             } catch (err: unknown) {
                 setDeleteError('Error al eliminar el buque');
                 console.error(err);
+            } finally {
+                setActualizando(false); // <--- Desactiva loader
             }
         }
     };    // Abre el modal para crear un nuevo buque
@@ -157,12 +167,12 @@ export default function BuquesPage() {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [showColumnsMenu]);    // Cierra el modal de editar buque
+    }, [showColumnsMenu]);
+
+    // Cierra el modal de editar buque
     const handleCloseEditBuqueModal = () => {
         setIsEditing(false);
-    };
-    
-    // Maneja el cambio de datos en campos de entrada
+    };    // Maneja el cambio de datos en campos de entrada
     // para el nuevo buque
     const handleNewBuqueInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -217,6 +227,7 @@ export default function BuquesPage() {
             return;
         }
         
+        setActualizando(true); // <--- Activa loader
         try {
             const response = await fetch('/api/buques', {
                 method: 'POST',
@@ -229,16 +240,17 @@ export default function BuquesPage() {
             if (!response.ok) {
                 const error = await response.json();
                 throw new Error(error.message || 'Error al crear el buque');
-            }            // Respuesta exitosa, actualiza el estado de buques
-            // con el nuevo buque creado
+            }
+            
+            // cierra el modal  
             const newBuque = await response.json();
-            // Agrega el nuevo buque a la lista de buques
-            // y cierra el modal
             setBuques([...buques, newBuque]);
             setIsCreatingNewBuque(false);
         } catch (error: unknown) {
             console.error('Error al crear el buque:', error);
             setCreationError(error instanceof Error ? error.message : 'Error al crear el buque');
+        } finally {
+            setActualizando(false); // <--- Desactiva loader
         }
     };
 
@@ -269,6 +281,20 @@ export default function BuquesPage() {
             <div className="text-red-500 text-lg font-medium">{error}</div>
         </div>
     );
+
+    if (actualizando) {
+        return (
+            <div className="fixed inset-0 bg-gray-200 bg-opacity-70 flex items-center justify-center z-50">
+                <div className="bg-white p-8 rounded shadow text-lg font-semibold flex items-center gap-2">
+                    <svg className="animate-spin h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                    Actualizando datos...
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className='bg-gray-200 min-h-screen flex justify-center'>
@@ -345,7 +371,7 @@ export default function BuquesPage() {
                                 </select>
                             </div>
                             <div className="flex items-center justify-between">
-                                <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                <button type="submit" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                                     Crear Buque
                                 </button>
                                 <button type="button" onClick={handleCloseNewBuqueModal} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
@@ -430,7 +456,7 @@ export default function BuquesPage() {
                             <div className="flex items-center justify-between">
                                 <button
                                     type="submit"
-                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                                     Modificar Usuario
                                 </button>
                                 <button
