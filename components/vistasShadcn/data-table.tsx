@@ -198,8 +198,7 @@ export default function DataTable() {
             const datosActualizados = await getRegisters();
             datosActualizados.sort((a, b) => new Date(a.eta).getTime() - new Date(b.eta).getTime());
             setRegistros(datosActualizados);
-
-            setIsCreatingNewRegister(false);
+            setUltimaModificacion(new Date());
         } catch (error: unknown) {
             console.error('Error al crear registro:', error);
             setCreationError('Error al crear registro');
@@ -355,6 +354,7 @@ export default function DataTable() {
             }
 
             setIsEditing(false);
+            setUltimaModificacion(new Date());
 
             // 1. Vuelve a cargar los registros desde el backend para tener los datos actualizados
             let nuevosDatos = await getRegisters();
@@ -450,6 +450,27 @@ export default function DataTable() {
     const esPrimerRegistro = isEditing && registroEdit.id === primerRegistroId;
 
     const hayRegistros = registros.length > 0;
+
+    // Nuevo estado para el rol de usuario
+    const [userRole, setUserRole] = useState<string>('externo');
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const userStr = localStorage.getItem("user");
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    setUserRole(user.rol || "externo");
+                } catch {
+                    setUserRole("externo");
+                }
+            } else {
+                setUserRole("externo");
+            }
+        }
+    }, []);
+
+    const [ultimaModificacion, setUltimaModificacion] = useState<Date | null>(null);
 
     if (loading) {
         return (
@@ -724,10 +745,12 @@ export default function DataTable() {
                 {/* Tabla de logistica */}
                 <div className="bg-white rounded-lg shadow-md p-6">
                     <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-2xl font-bold text-gray-800">Logistica</h1>
-                        <button onClick={handleOpenNewRegistroModal} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors">
-                            + Nuevo Registro
-                        </button>
+                        <h1 className="text-2xl font-bold text-gray-800">Logística</h1>
+                        {userRole === "admin" && (
+                            <button onClick={handleOpenNewRegistroModal} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors">
+                                + Nuevo Registro
+                            </button>
+                        )}
                     </div>
 
 
@@ -745,7 +768,9 @@ export default function DataTable() {
                                     <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">ETC</th>
                                     <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">ETD</th>
                                     <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">CARGO</th>
-                                    <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">ACCIONES</th>
+                                    {userRole === "admin" && (
+                                        <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">ACCIONES</th>
+                                    )}
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -760,40 +785,55 @@ export default function DataTable() {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{registro.etc ? formatearFechaParaUsuario(new Date(registro.etc)) : '-'}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{registro.etd ? formatearFechaParaUsuario(new Date(registro.etd)) : '-'}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{registro.cargo}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 relative">
-                                            <button
-                                                className="p-2 rounded-full hover:bg-gray-200"
-                                                onClick={() => setMenuOpenId(menuOpenId === registro.id ? null : registro.id)}
-                                            >
-                                                <span className="text-xl">⋮</span>
-                                            </button>
-                                            {menuOpenId === registro.id && (
-                                                <div
-                                                    ref={menuRef}
-                                                    className="absolute top-0 right-18 w-32 bg-white border rounded shadow-lg z-10"
+                                        {userRole === "admin" && (
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 relative">
+                                                <button
+                                                    className="p-2 rounded-full hover:bg-gray-200"
+                                                    onClick={() => setMenuOpenId(menuOpenId === registro.id ? null : registro.id)}
                                                 >
-                                                    <button
-                                                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                                                        onClick={() => handleEdit(registro)}
+                                                    <span className="text-xl">⋮</span>
+                                                </button>
+                                                {menuOpenId === registro.id && (
+                                                    <div
+                                                        ref={menuRef}
+                                                        className="absolute top-0 right-18 w-32 bg-white border rounded shadow-lg z-10"
                                                     >
-                                                        Editar
-                                                    </button>
-                                                    <button
-                                                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-600"
-                                                        onClick={() => handleDelete(registro.id)}
-                                                    >
-                                                        Eliminar
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </td>
+                                                        <button
+                                                            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                                                            onClick={() => handleEdit(registro)}
+                                                        >
+                                                            Editar
+                                                        </button>
+                                                        <button
+                                                            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-600"
+                                                            onClick={() => handleDelete(registro.id)}
+                                                        >
+                                                            Eliminar
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </td>
+                                        )}
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
                 </div>
-
+                {ultimaModificacion && (
+                    <div className="mb-4 text-sm text-gray-600">
+                        Última modificación:{" "}
+                        {ultimaModificacion.toLocaleString("es-MX", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                          hour12: false,
+                        })}
+                      </div>
+                )}
             </div>
         </div>
     );

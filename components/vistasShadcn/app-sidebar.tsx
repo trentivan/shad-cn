@@ -7,20 +7,16 @@ import {
   CameraIcon,
   ClipboardCheck,
   FileCodeIcon,
-  FileIcon,
   FileTextIcon,
-  HelpCircleIcon,
   LayoutDashboardIcon,
   ListIcon,
   Sailboat,
-  SearchIcon,
-  SettingsIcon,
   User,
 } from "lucide-react"
+import { useEffect, useState } from "react"
 
 import { NavDocuments } from "@/components/vistasShadcn/nav-documents"
 import { NavMain } from "@/components/vistasShadcn/nav-main"
-import { NavSecondary } from "@/components/vistasShadcn/nav-secondary"
 import { NavUser } from "@/components/vistasShadcn/nav-user"
 import {
   Sidebar,
@@ -115,38 +111,39 @@ const data = {
       ],
     },
   ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: SettingsIcon,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: HelpCircleIcon,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: SearchIcon,
-    },
-  ],
-  documents: [
-    {
-      name: "TODO",
-      url: "#",
-      icon: ClipboardCheck,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: FileIcon,
-    },
-  ],
+  // documents: [
+  //   {
+  //     name: "TODO",
+  //     url: "#",
+  //     icon: ClipboardCheck,
+  //   },
+  // ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [userRole, setUserRole] = useState<string>("admin") // Valor por defecto
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const userStr = localStorage.getItem("user")
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr)
+          setUserRole(user.rol || "externo")
+        } catch {
+          setUserRole("externo")
+        }
+      } else {
+        setUserRole("externo")
+      }
+    }
+  }, [])
+
+  // Filtra navMain para ocultar "Gestión" si no es admin
+  const navMainFiltrado = data.navMain.filter(
+    item => item.title !== "Gestión" || userRole === "admin"
+  )
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -158,19 +155,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="#">
                 <ArrowUpCircleIcon className="h-5 w-5" />
-                <span className="text-base font-semibold">Sistema empresarial</span>
+                <span className="text-base font-semibold">
+                  Sistema empresarial
+                </span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={navMainFiltrado} />
+        {/* <NavDocuments items={data.documents} /> */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   )

@@ -451,6 +451,25 @@ export default function DataTable() {
 
     const hayRegistros = registros.length > 0;
 
+    // Nuevo estado para el rol de usuario
+    const [userRole, setUserRole] = useState<string>('externo');
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const userStr = localStorage.getItem("user");
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    setUserRole(user.rol || "externo");
+                } catch {
+                    setUserRole("externo");
+                }
+            } else {
+                setUserRole("externo");
+            }
+        }
+    }, []);
+
     if (loading) {
         return (
             <div className="bg-gray-50 text-gray-600 min-h-screen flex items-center justify-center">
@@ -725,9 +744,11 @@ export default function DataTable() {
                 <div className="bg-white rounded-lg shadow-md p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-bold text-gray-800">Logistica</h1>
-                        <button onClick={handleOpenNewRegistroModal} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors">
-                            + Nuevo Registro
-                        </button>
+                        {userRole === "admin" && (
+                            <button onClick={handleOpenNewRegistroModal} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors">
+                                + Nuevo Registro
+                            </button>
+                        )}
                     </div>
 
 
@@ -745,7 +766,9 @@ export default function DataTable() {
                                     <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">ETC</th>
                                     <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">ETD</th>
                                     <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">CARGO</th>
-                                    <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">ACCIONES</th>
+                                    {userRole === "admin" && (
+                                        <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">ACCIONES</th>
+                                    )}
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -760,33 +783,35 @@ export default function DataTable() {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{registro.etc ? formatearFechaParaUsuario(new Date(registro.etc)) : '-'}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{registro.etd ? formatearFechaParaUsuario(new Date(registro.etd)) : '-'}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{registro.cargo}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 relative">
-                                            <button
-                                                className="p-2 rounded-full hover:bg-gray-200"
-                                                onClick={() => setMenuOpenId(menuOpenId === registro.id ? null : registro.id)}
-                                            >
-                                                <span className="text-xl">⋮</span>
-                                            </button>
-                                            {menuOpenId === registro.id && (
-                                                <div
-                                                    ref={menuRef}
-                                                    className="absolute top-0 right-18 w-32 bg-white border rounded shadow-lg z-10"
+                                        {userRole === "admin" && (
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 relative">
+                                                <button
+                                                    className="p-2 rounded-full hover:bg-gray-200"
+                                                    onClick={() => setMenuOpenId(menuOpenId === registro.id ? null : registro.id)}
                                                 >
-                                                    <button
-                                                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                                                        onClick={() => handleEdit(registro)}
+                                                    <span className="text-xl">⋮</span>
+                                                </button>
+                                                {menuOpenId === registro.id && (
+                                                    <div
+                                                        ref={menuRef}
+                                                        className="absolute top-0 right-18 w-32 bg-white border rounded shadow-lg z-10"
                                                     >
-                                                        Editar
-                                                    </button>
-                                                    <button
-                                                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-600"
-                                                        onClick={() => handleDelete(registro.id)}
-                                                    >
-                                                        Eliminar
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </td>
+                                                        <button
+                                                            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                                                            onClick={() => handleEdit(registro)}
+                                                        >
+                                                            Editar
+                                                        </button>
+                                                        <button
+                                                            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-600"
+                                                            onClick={() => handleDelete(registro.id)}
+                                                        >
+                                                            Eliminar
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </td>
+                                        )}
                                     </tr>
                                 ))}
                             </tbody>

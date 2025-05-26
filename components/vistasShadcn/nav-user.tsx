@@ -7,6 +7,7 @@ import {
   MoreVerticalIcon,
   UserCircleIcon,
 } from "lucide-react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
 import {
@@ -30,17 +31,38 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
-export function NavUser({
-  user,
-}: {
-  user: {
+export function NavUser() {
+  const { isMobile } = useSidebar()
+  const router = useRouter()
+
+  // Estado para el usuario
+  const [user, setUser] = useState<{
     name: string
     email: string
     avatar: string
-  }
-}) {
-  const { isMobile } = useSidebar()
-  const router = useRouter()
+  }>({
+    name: "",
+    email: "",
+    avatar: "#",
+  })
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const userStr = localStorage.getItem("user")
+      if (userStr) {
+        try {
+          const userObj = JSON.parse(userStr)
+          setUser({
+            name: userObj.nombre || userObj.name || "",
+            email: userObj.correo || userObj.email || "",
+            avatar: userObj.avatar || "#",
+          })
+        } catch {
+          setUser({ name: "", email: "", avatar: "#" })
+        }
+      }
+    }
+  }, [])
 
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" })
@@ -91,23 +113,20 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/cuenta")}
+              className="cursor-pointer">
                 <UserCircleIcon />
-                Account
+                Cuenta
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCardIcon />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
+              {/* <DropdownMenuItem>
                 <BellIcon />
                 Notifications
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
               <LogOutIcon />
-              Log out
+              Cerrar sesión
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
