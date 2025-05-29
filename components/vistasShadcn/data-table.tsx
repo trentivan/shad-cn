@@ -3,18 +3,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { getRegisters } from '../../app/data/tablaDeLogistica';
 import { tablaDeLogistica } from '@/app/types/tablaDeLogistica';
-import { Buque } from '@/app/types/buque'; // Ajusta la ruta si es necesario
-import { getBuques } from '@/app/data/buque'; // Ajusta la ruta si es necesario
+import { Buque } from '@/app/types/buque';
+import { getBuques } from '@/app/data/buque';
 
 function convertirFechaHora(fechaHoraString: string): Date {
     if (!fechaHoraString || typeof fechaHoraString !== 'string') {
         throw new Error('Fecha/hora inválida');
     }
-    // Si es formato ISO, retorna el Date directamente
+    // si es formato ISO, retorna el Date directamente
     if (fechaHoraString.includes('T')) {
         return new Date(fechaHoraString);
     }
-    // Si es formato dd/MM hh:mm
+    // si es formato dd/MM hh:mm
     if (fechaHoraString.includes(' ')) {
         const [fechaParte, horaParte] = fechaHoraString.split(' ');
         if (!fechaParte || !horaParte || !fechaParte.includes('/') || !horaParte.includes(':')) {
@@ -34,7 +34,7 @@ function convertirFechaHora(fechaHoraString: string): Date {
 
 function formatearFechaParaUsuario(date: Date): string {
     const dia = String(date.getDate()).padStart(2, '0');
-    const mes = String(date.getMonth() + 1).padStart(2, '0'); // Sumamos 1 porque getMonth() es 0-indexado
+    const mes = String(date.getMonth() + 1).padStart(2, '0'); // sumamos 1 porque getMonth() es 0-indexado
     const hora = String(date.getHours()).padStart(2, '0');
     const minuto = String(date.getMinutes()).padStart(2, '0');
 
@@ -47,7 +47,7 @@ export default function DataTable() {
     const [error, setError] = useState<string | null>(null);
     const [buques, setBuques] = useState<Buque[]>([]);
 
-    // Estados para el formulario de nuevo usuario
+    // estados para el formulario de nuevo usuario
     const [isCreatingNewRegister, setIsCreatingNewRegister] = useState(false);
     const [newRegistro, setNewRegistro] = useState<Omit<tablaDeLogistica, 'id' | 'createdAt' | 'updatedAt'>>({
         vessel: '',
@@ -62,7 +62,7 @@ export default function DataTable() {
     });
     const [creationError, setCreationError] = useState<string | null>(null);
 
-    // 1. Estado para el modal de edición y el registro a editar
+    // estado para el modal de edicion y el registro a editar
     const [isEditing, setIsEditing] = useState(false);
     const [registroEdit, setRegistroEdit] = useState<Omit<tablaDeLogistica, 'createdAt' | 'updatedAt'>>({
         id: 0,
@@ -81,7 +81,7 @@ export default function DataTable() {
 
     const handleOpenNewRegistroModal = () => {
         setIsCreatingNewRegister(true);
-        setNewRegistro({ // Resetea el formulario al abrirlo
+        setNewRegistro({ // resetea el formulario al abrirlo
             vessel: '',
             loa: 0,
             operationTime: '',
@@ -108,9 +108,9 @@ export default function DataTable() {
         try {
             let registroParaCrear = { ...newRegistro };
 
-            // Si ya hay registros, calcula automáticamente los campos
+            // si ya hay registros, calcula automaticamente los campos
             if (registros.length > 0) {
-                // Busca el registro anterior cuyo ETA sea menor al ETA del nuevo registro
+                // busca el registro anterior cuyo ETA sea menor al ETA del nuevo registro
                 const etaNueva = convertirFechaHora(registroParaCrear.eta);
                 const registrosOrdenados = [...registros].sort((a, b) => new Date(a.eta).getTime() - new Date(b.eta).getTime());
                 const registroAnterior = [...registrosOrdenados]
@@ -124,16 +124,16 @@ export default function DataTable() {
                         `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
                     if (etaActualDate < etdAnteriorDate) {
-                        // Caso 1: ETA < ETD anterior → POB = ETD anterior + 1h
+                        // caso 1: ETA < ETD anterior POB = ETD anterior + 1h
                         const pobDate = sumarHoras(etdAnteriorDate, 1);
                         registroParaCrear.pob = formatDate(pobDate);
                     } else {
-                        // Caso 2: ETA >= ETD anterior → POB = ETA + 1h
+                        // caso 2: ETA >= ETD anterior POB = ETA + 1h
                         const pobDate = sumarHoras(etaActualDate, 1);
                         registroParaCrear.pob = formatDate(pobDate);
                     }
                 } else if (registroParaCrear.eta) {
-                    // Si no hay registro anterior, POB = ETA + 1h
+                    // si no hay registro anterior POB = ETA + 1h
                     const etaActualDate = convertirFechaHora(registroParaCrear.eta);
                     const pobDate = sumarHoras(etaActualDate, 1);
                     const formatDate = (d: Date) =>
@@ -141,7 +141,7 @@ export default function DataTable() {
                     registroParaCrear.pob = formatDate(pobDate);
                 }
 
-                // Calcula el resto de campos automáticamente
+                // calcula el resto de campos automaticamente
                 if (registroParaCrear.eta && registroParaCrear.operationTime) {
                     const recalculado = recalcularCampos({ id: 0, ...registroParaCrear });
                     registroParaCrear = {
@@ -187,14 +187,14 @@ export default function DataTable() {
 
             const newRegistroData = await response.json();
 
-            // 1. Actualiza el estado local
+            // actualiza el estado local
             const nuevosRegistros = [...registros, newRegistroData].sort((a, b) => new Date(a.eta).getTime() - new Date(b.eta).getTime());
             setRegistros(nuevosRegistros);
 
-            // 2. Recalcula todos los registros (pasa -1 como idEditado)
+            // recalcula todos los registros (pasa -1 como idEditado)
             await actualizarTodosLosRegistros(-1, nuevosRegistros);
 
-            // 3. Vuelve a cargar los registros para reflejar todos los cambios
+            // vuelve a cargar los registros para reflejar todos los cambios
             const datosActualizados = await getRegisters();
             datosActualizados.sort((a, b) => new Date(a.eta).getTime() - new Date(b.eta).getTime());
             setRegistros(datosActualizados);
@@ -225,7 +225,7 @@ export default function DataTable() {
         };
     }, [menuOpenId]);
 
-    // Ejemplo de handlers (debes implementar la lógica real)
+    // handlers
     const handleEdit = (registro: tablaDeLogistica) => {
         setRegistroEdit({
             ...registro,
@@ -243,20 +243,20 @@ export default function DataTable() {
         const { name, value } = e.target;
         setRegistroEdit(prev => {
             const actualizado = { ...prev, [name]: value };
-            // Recalcula todos los campos dependientes al cambiar cualquier campo
+            // recalcula todos los campos dependientes al cambiar cualquier campo
             return recalcularCampos(actualizado);
         });
     };
 
-    // Función para actualizar todos los registros (excepto el editado)
+    // funcion para actualizar todos los registros
     const actualizarTodosLosRegistros = async (idEditado: number, registrosActualizados?: tablaDeLogistica[]) => {
         setActualizando(true);
-        // Ordena los registros por ETA antes de recalcular
+        // ordena los registros por ETA antes de recalcular
         let registrosParaUsar = (registrosActualizados || registros).slice().sort(
             (a, b) => new Date(a.eta).getTime() - new Date(b.eta).getTime()
         );
 
-        // 1. Recalcula todos los registros en memoria
+        // recalcula todos los registros en memoria
         let recalculados: tablaDeLogistica[] = [];
         for (let i = 0; i < registrosParaUsar.length; i++) {
             const registro = registrosParaUsar[i];
@@ -265,32 +265,32 @@ export default function DataTable() {
                 `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
             if (i === 0) {
-                // Primer registro: POB = ETA + 1h
+                // primer registro: POB = ETA + 1h
                 if (registroActualizado.eta) {
                     const etaDate = convertirFechaHora(registroActualizado.eta);
                     const pobDate = sumarHoras(etaDate, 1);
                     registroActualizado.pob = formatDate(pobDate);
                 }
             } else {
-                // Del segundo en adelante
-                const registroAnterior = recalculados[i - 1]; // Usa el ya recalculado
+                // del segundo en adelante
+                const registroAnterior = recalculados[i - 1]; // usa el ya recalculado
                 if (registroAnterior && registroAnterior.etd && registroActualizado.eta) {
                     const etaActualDate = convertirFechaHora(registroActualizado.eta);
                     const etdAnteriorDate = convertirFechaHora(registroAnterior.etd);
 
                     if (etaActualDate < etdAnteriorDate) {
-                        // ETA < ETD anterior → POB = ETD anterior + 1h
+                        // ETA < ETD anterior POB = ETD anterior + 1h
                         const pobDate = sumarHoras(etdAnteriorDate, 1);
                         registroActualizado.pob = formatDate(pobDate);
                     } else {
-                        // ETA >= ETD anterior → POB = ETA + 1h
+                        // ETA >= ETD anterior POB = ETA + 1h
                         const pobDate = sumarHoras(etaActualDate, 1);
                         registroActualizado.pob = formatDate(pobDate);
                     }
                 }
             }
 
-            // Recalcula el resto de campos si hay datos suficientes
+            // recalcula el resto de campos si hay datos suficientes
             if (registroActualizado.eta && registroActualizado.operationTime) {
                 const recalculado = recalcularCampos(registroActualizado);
                 registroActualizado = {
@@ -306,7 +306,7 @@ export default function DataTable() {
             recalculados.push(registroActualizado);
         }
 
-        // 2. Ahora sí, actualiza todos en la base de datos
+        // actualiza todos en la base de datos
         for (const registroActualizado of recalculados) {
             try {
                 const registroParaEnviar = {
@@ -354,16 +354,15 @@ export default function DataTable() {
 
             setIsEditing(false);
 
-            // 1. Vuelve a cargar los registros desde el backend para tener los datos actualizados
+            // vuelve a cargar los registros desde el backend para tener los datos actualizados
             let nuevosDatos = await getRegisters();
             nuevosDatos.sort((a, b) => new Date(a.eta).getTime() - new Date(b.eta).getTime());
             setRegistros(nuevosDatos);
 
-            // 2. Espera a que el estado se actualice antes de recalcular el resto
-            //    (usamos una función auxiliar para asegurar que usamos los datos más recientes)
+            // espera a que el estado se actualice antes de recalcular el resto
             await actualizarTodosLosRegistros(registroEdit.id, nuevosDatos);
 
-            // 3. Vuelve a cargar los registros para reflejar todos los cambios
+            // vuelve a cargar los registros para reflejar todos los cambios
             nuevosDatos = await getRegisters();
             nuevosDatos.sort((a, b) => new Date(a.eta).getTime() - new Date(b.eta).getTime());
             setRegistros(nuevosDatos);
@@ -384,14 +383,14 @@ export default function DataTable() {
                 if (!response.ok) {
                     throw new Error('Error al eliminar el registro');
                 }
-                // 1. Actualiza el estado local
+                // actualiza el estado local
                 const nuevosRegistros = registros.filter(registro => registro.id !== id);
                 setRegistros(nuevosRegistros);
 
-                // 2. Recalcula todos los registros restantes
+                // recalcula todos los registros restantes
                 await actualizarTodosLosRegistros(-1, nuevosRegistros);
 
-                // 3. Vuelve a cargar los registros para reflejar todos los cambios
+                // vuelve a cargar los registros para reflejar todos los cambios
                 const datosActualizados = await getRegisters();
                 datosActualizados.sort((a, b) => new Date(a.eta).getTime() - new Date(b.eta).getTime());
                 setRegistros(datosActualizados);
@@ -409,7 +408,7 @@ export default function DataTable() {
         const fetchData = async () => {
             try {
                 const data = await getRegisters();
-                // Ordenar por ETA de menor a mayor
+                // ordenado por ETA de menor a mayor
                 data.sort((a, b) => {
                     const fechaA = new Date(a.eta).getTime();
                     const fechaB = new Date(b.eta).getTime();
@@ -440,7 +439,7 @@ export default function DataTable() {
 
     const buquesRegistrados = registros.map(r => r.vessel);
 
-    // Encuentra el id del primer registro (menor ETA)
+    // encuentra el id del primer registro (menor ETA)
     const primerRegistroId = registros.length > 0
         ? [...registros].sort((a, b) => new Date(a.eta).getTime() - new Date(b.eta).getTime())[0].id
         : null;
@@ -449,7 +448,7 @@ export default function DataTable() {
 
     const hayRegistros = registros.length > 0;
 
-    // Nuevo estado para el rol de usuario
+    // nuevo estado para el rol de usuario
     const [userRole, setUserRole] = useState<string>('externo');
 
     useEffect(() => {
@@ -501,7 +500,7 @@ export default function DataTable() {
     return (
         <div className='bg-gray-200 min-h-screen flex justify-center'>
             <div className="container mx-auto p-6">
-                {/* Formulario para crear nuevo usuario */}
+                {/* formulario para crear nuevo usuario */}
                 {isCreatingNewRegister && (
                     <div className="bg-white rounded-lg shadow-md p-6 mb-8 max-w-md">
                         <h2 className="text-xl font-bold text-gray-800 mb-4">Crear Nuevo Registro</h2>
@@ -626,7 +625,7 @@ export default function DataTable() {
                     </div>
                 )}
 
-                {/* Modal de edición */}
+                {/* modal de edicion */}
                 {isEditing && (
                     <div className="bg-white rounded-lg shadow-md p-6 mb-8 max-w-md">
                         <h2 className="text-xl font-bold text-gray-800 mb-4">Modificar registro</h2>
@@ -738,7 +737,7 @@ export default function DataTable() {
                     </div>
                 )}
 
-                {/* Tabla de logistica */}
+                {/* tabla de logistica */}
                 <div className="bg-white rounded-lg shadow-md p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-bold text-gray-800">Logística</h1>
@@ -836,16 +835,15 @@ function sumarOperationTime(fecha: Date, operationTime: string): Date {
 function recalcularCampos(registro: Omit<tablaDeLogistica, 'createdAt' | 'updatedAt'>): Omit<tablaDeLogistica, 'createdAt' | 'updatedAt'> {
     const { eta, operationTime } = registro;
 
-    // Log para depuración
+    // log para depuracion
     console.log('recalcularCampos:', { eta, operationTime, registro });
 
-    // Si no hay ETA o operationTime, no se puede calcular el resto
+    // si no hay ETA o operationTime, no se puede calcular el resto
     if (!eta || !operationTime) return registro;
 
     try {
         const etaDate = convertirFechaHora(eta);
-        // const pobDate = sumarHoras(etaDate, 1);
-        const pobDate = registro.pob ? convertirFechaHora(registro.pob) : etaDate; // Si pob existe, úsalo; si no, usa etaDate
+        const pobDate = registro.pob ? convertirFechaHora(registro.pob) : etaDate; // si pob existe, se usa, si no se usa etaDate
         const etbDate = sumarHoras(pobDate, 1);
         const etcDate = sumarOperationTime(etbDate, operationTime);
         const etdDate = sumarHoras(etcDate, 1);
@@ -861,19 +859,19 @@ function recalcularCampos(registro: Omit<tablaDeLogistica, 'createdAt' | 'update
             etd: formatDate(etdDate),
         };
     } catch {
-        // Si hay error en el formato, regresa el registro sin cambios
+        // si hay error en el formato, regresa el registro sin cambios
         return registro;
     }
 }
 
 function toISOIfNeeded(fecha: string) {
     if (!fecha) return '';
-    // Si ya es ISO, regresa igual
+    // si ya es ISO, regresa igual
     if (fecha.includes('T')) return fecha;
-    // Si es dd/MM hh:mm, conviértelo a ISO
+    // si es dd/MM hh:mm, convierte a ISO
     try {
         return convertirFechaHora(fecha).toISOString();
     } catch {
-        return fecha; // Si falla, regresa el original
+        return fecha; // si falla, regresa el original
     }
 }

@@ -5,7 +5,7 @@ import { User } from '../../app/types/usuarios';
 import { Agencia } from '@/app/types/agencia';
 import { getUsers, updateUser as apiUpdateUser, deleteUser as apiDeleteUser } from '../../app/data/usuarios';
 import { getAgencias } from '@/app/data/agencias';
-import { ListFilter } from "lucide-react"; // Asegúrate de tener este import
+import { ListFilter } from "lucide-react";
 
 export default function UsersPage() {
     const [users, setUsers] = useState<User[]>([]);
@@ -14,21 +14,21 @@ export default function UsersPage() {
     const [error, setError] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
 
-    // Estado para el usuario que se está editando
+    // estado para el usuario que se esta editando
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [updateError, setUpdateError] = useState<string | null>(null);
 
     const [deleteError, setDeleteError] = useState<string | null>(null);
 
-    // Estados para el formulario de nuevo usuario
+    // estados para el formulario de nuevo usuario
     const [isCreatingNewUser, setIsCreatingNewUser] = useState(false);
     const [newUserData, setNewUserData] = useState<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>({
         nombre: '',
         correo: '',
-        rol: 'colaborador', // Valor por defecto
+        rol: 'colaborador', // valor por defecto
         agenciaId: undefined,
         contrasena: '',
-        estado: 'Activo', // Valor por defecto
+        estado: 'Activo', // valor por defecto
     });
     const [creationError, setCreationError] = useState<string | null>(null);
 
@@ -53,7 +53,7 @@ export default function UsersPage() {
         const fetchUsers = async () => {
             try {
                 const data = await getUsers();
-                // Normaliza agenciaId a número
+                // normaliza agenciaId a número
                 setUsers(data.map(user => ({
                     ...user,
                     agenciaId: user.agenciaId ? Number(user.agenciaId) : undefined,
@@ -113,8 +113,8 @@ export default function UsersPage() {
         };
     }, [showColumnsMenu]);
 
-    // Maneja la edición de un usuario
-    // Verifica si el usuario está editando y actualiza el estado
+    // handler para la edicion de un usuario
+    // verifica si el usuario esta editando y actualiza el estado
     const handleEdit = async (user: User) => {
         try {
             const response = await fetch(`/api/users/${user.id}`);
@@ -131,12 +131,12 @@ export default function UsersPage() {
         }
     };
 
-    // Maneja la actualización de un usuario
-    // Verifica si el usuario está editando y actualiza el estado
+    // maneja la actualizacion de un usuario
+    // verifica si el usuario esta editando y actualiza el estado
     const handleUpdateUser = async (updatedUserData: Partial<User>) => {
         if (!editingUser) return;
         setUpdateError(null);
-        setActualizando(true); // Activa loader
+        setActualizando(true); // activa loader
         try {
             const updatedUser = await apiUpdateUser(editingUser.id, updatedUserData);
             setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
@@ -146,16 +146,15 @@ export default function UsersPage() {
             setUpdateError('Error al actualizar el usuario');
             console.error(err);
         } finally {
-            setActualizando(false); // Desactiva loader
+            setActualizando(false); // desactiva loader
         }
     };
 
-    // Maneja la eliminación de un usuario
-    // Confirma la eliminación y actualiza el estado
+    // maneja la eliminacion de un usuario
     const handleDelete = async (id: number) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
             setDeleteError(null);
-            setActualizando(true); // Activa loader
+            setActualizando(true); // activa loader
             try {
                 await apiDeleteUser(id);
                 setUsers(users.filter(user => user.id !== id));
@@ -163,13 +162,12 @@ export default function UsersPage() {
                 setDeleteError('Error al eliminar el usuario');
                 console.error(err);
             } finally {
-                setActualizando(false); // Desactiva loader
+                setActualizando(false); // desactiva loader
             }
         }
     };
 
     // Abre el modal para crear un nuevo usuario
-    // y limpia los datos del nuevo usuario
     const handleOpenNewUserModal = () => {
         setIsCreatingNewUser(true);
         setNewUserData({
@@ -183,18 +181,16 @@ export default function UsersPage() {
         setCreationError(null);
     };
 
-    // Cierra los modales 
     // cierra el modal de crear nuevo usuario
-    // y limpia los datos del nuevo usuario
     const handleCloseNewUserModal = () => {
         setIsCreatingNewUser(false);
     };
 
-    // Cierra el modal de editar usuario
-    // y limpia los datos del usuario que se está editando
+    // cierra el modal de editar usuario
+    // y limpia los datos del usuario que se esta editando
     const handleCloseEditUserModal = () => {
         setIsEditing(false);
-    };    // Maneja el cambio de datos en campos de entrada
+    };    // maneja el cambio de datos en campos de entrada
     // para el nuevo usuario
     const handleNewUserInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -206,7 +202,7 @@ export default function UsersPage() {
             ...prevData,
             [name]: processedValue,
         }));
-    };    // Maneja el cambio de datos en campos de entrada
+    };    // maneja el cambio de datos en campos de entrada
     // para el usuario que se está editando
     const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -222,10 +218,10 @@ export default function UsersPage() {
         }
     };
 
-    // Maneja la creación de un nuevo usuario
+    // maneja la creacion de un nuevo usuario
     const handleCreateNewUser = async () => {
         setCreationError(null);
-        setActualizando(true); // Activa loader
+        setActualizando(true); // activa loader
         try {
             const response = await fetch('/api/users', {
                 method: 'POST',
@@ -248,7 +244,7 @@ export default function UsersPage() {
             console.error('Error al crear el usuario:', error);
             setCreationError('Error al crear el usuario');
         } finally {
-            setActualizando(false); // Desactiva loader
+            setActualizando(false); // desactiva loader
         }
     };
 
@@ -298,7 +294,7 @@ export default function UsersPage() {
     return (
         <div className='bg-gray-200 min-h-screen flex justify-center'>
             <div className="container mx-auto p-6">
-                {/* Formulario para crear nuevo usuario */}
+                {/* formulario para crear nuevo usuario */}
                 {isCreatingNewUser && (
                     <div className="bg-white rounded-lg shadow-md p-6 mb-8 max-w-md">
                         <h2 className="text-xl font-bold text-gray-800 mb-4">Crear Nuevo Usuario</h2>
@@ -363,7 +359,7 @@ export default function UsersPage() {
                     </div>
                 )}
 
-                {/* Formulario para editar usuario */}
+                {/* formulario para editar usuario */}
                 {isEditing && (
                     <div className="bg-white rounded-lg shadow-md p-6 mb-8 max-w-md">
                         <h2 className="text-xl font-bold text-gray-800 mb-4">Modificar Usuario</h2>
@@ -464,7 +460,7 @@ export default function UsersPage() {
                     </div>
                 )}
 
-                {/* Tabla de usuarios */}
+                {/* tabla de usuarios */}
                 <div className="bg-white rounded-lg shadow-md p-6 mb-8">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-bold text-gray-800">Gestión de Usuarios</h1>

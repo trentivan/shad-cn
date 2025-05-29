@@ -36,7 +36,7 @@ export default function CuentaPage() {
       const userObj = JSON.parse(userStr);
       const id = userObj.id;
 
-      // Prepara los datos a enviar (no envíes contraseña si está vacía)
+      // prepara los datos a enviar
       const datosActualizados: any = {
         nombre: user.nombre,
         correo: user.correo,
@@ -57,13 +57,13 @@ export default function CuentaPage() {
         return;
       }
 
-      // Actualiza localStorage con los nuevos datos (excepto contraseña)
+      // actualiza localStorage con los nuevos datos
       const actualizado = { ...userObj, ...datosActualizados };
       delete actualizado.contrasena;
       localStorage.setItem("user", JSON.stringify(actualizado));
 
       alert("Cambios guardados correctamente.");
-      setUser({ ...user, contrasena: "" }); // Limpia el campo de contraseña
+      setUser({ ...user, contrasena: "" }); // limpia el campo de contraseña
     } catch (err) {
       alert("Ocurrió un error al actualizar la cuenta.");
       console.error(err);

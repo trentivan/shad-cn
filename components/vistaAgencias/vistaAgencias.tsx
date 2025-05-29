@@ -115,7 +115,7 @@ export default function AgenciasPage() {
 
     const handleCreateNewAgencia = async () => {
         setCreationError(null);
-        setActualizando(true); // Activa loader
+        setActualizando(true); // activa loader
         try {
             const newAgencia = await createAgencia(newAgenciaData);
             setAgencias([...agencias, newAgencia]);
@@ -124,7 +124,7 @@ export default function AgenciasPage() {
             console.error('Error al crear la agencia:', error);
             setCreationError('Error al crear la agencia');
         } finally {
-            setActualizando(false); // Desactiva loader
+            setActualizando(false); // desactiva loader
         }
     };
 
@@ -151,7 +151,7 @@ export default function AgenciasPage() {
 
     const handleUpdateAgencia = async () => {
         if (!editingAgencia) return;
-        setActualizando(true); // Activa loader
+        setActualizando(true); // activa loader
         try {
             const updatedAgencia = await updateAgencia(editingAgencia.id, {
                 nombre: editingAgencia.nombre,
@@ -167,14 +167,14 @@ export default function AgenciasPage() {
             console.error('Error al actualizar la agencia:', error);
             setUpdateError('Error al actualizar la agencia');
         } finally {
-            setActualizando(false); // Desactiva loader
+            setActualizando(false); // desactiva loader
         }
     };
 
     const handleDelete = async (id: number) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar esta agencia?')) {
             setDeleteError(null);
-            setActualizando(true); // Activa loader
+            setActualizando(true); // activa loader
             try {
                 await deleteAgencia(id);
                 setAgencias(agencias.filter(agencia => agencia.id !== id));
@@ -182,7 +182,7 @@ export default function AgenciasPage() {
                 console.error('Error al eliminar la agencia:', error);
                 setDeleteError('Error al eliminar la agencia');
             } finally {
-                setActualizando(false); // Desactiva loader
+                setActualizando(false); // desactiva loader
             }
         }
     };
@@ -227,7 +227,7 @@ export default function AgenciasPage() {
     return (
         <div className='bg-gray-200 min-h-screen flex justify-center'>
             <div className="container mx-auto p-6">
-                {/* Modal para crear nueva agencia */}
+                {/* modal para crear nueva agencia */}
                 {isCreatingNewAgencia && (
                     <div className="bg-white rounded-lg shadow-md p-6 mb-8 max-w-md">
                         <h2 className="text-xl font-bold text-gray-800 mb-4">Crear Nueva Agencia</h2>
@@ -311,7 +311,7 @@ export default function AgenciasPage() {
                     </div>
                 )}
 
-                {/* Modal para editar agencia */}
+                {/* modal para editar agencia */}
                 {isEditingAgencia && editingAgencia && (
                     <div className="bg-white rounded-lg shadow-md p-6 mb-8 max-w-md">
                         <h2 className="text-xl font-bold text-gray-800 mb-4">Modificar Agencia</h2>
@@ -396,7 +396,7 @@ export default function AgenciasPage() {
                     </div>
                 )}
 
-                {/* Tabla de agencias */}
+                {/* tabla de agencias */}
                 <div className="bg-white rounded-lg shadow-md p-6 mb-8">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-bold text-gray-800">Gestión de Agencias</h1>

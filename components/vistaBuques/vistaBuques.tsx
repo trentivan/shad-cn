@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Buque } from '@/app/types/buque';
 import { getBuques, updateBuque as apiUpdateBuque, deleteBuque as apiDeleteBuque } from '@/app/data/buque';
-import { Agencia } from '@/app/types/agencia'; // Ajusta la ruta si es necesario
-import { getAgencias } from '@/app/data/agencias'; // Ajusta la ruta si es necesario
+import { Agencia } from '@/app/types/agencia';
+import { getAgencias } from '@/app/data/agencias';
 import { ListFilter } from "lucide-react";
 
 export default function BuquesPage() {
@@ -13,24 +13,24 @@ export default function BuquesPage() {
     const [error, setError] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
 
-    // Estado para el buque que se está editando
+    // estado para el buque que se está editando
     const [editingBuque, setEditingBuque] = useState<Buque | null>(null);
     const [updateError, setUpdateError] = useState<string | null>(null);
-
-    const [deleteError, setDeleteError] = useState<string | null>(null);    // Estados para el formulario de nuevo buque
+    // estados para el formulario de nuevo buque
+    const [deleteError, setDeleteError] = useState<string | null>(null);
     const [isCreatingNewBuque, setIsCreatingNewBuque] = useState(false);
     const [newBuqueData, setNewBuqueData] = useState<{
         nombre: string;
-        agenciaId: number | string; // Allow both types for form handling
+        agenciaId: number | string;
         tipo: string;
         loa: number;
         estado: string;
     }>({
         nombre: '',
-        agenciaId: '', // Initially empty string to force user selection
-        tipo: 'materia prima', // Valor por defecto
+        agenciaId: '',
+        tipo: 'materia prima',
         loa: 0,
-        estado: 'Activo', // Valor por defecto
+        estado: 'Activo',
     });
     const [creationError, setCreationError] = useState<string | null>(null);
 
@@ -82,11 +82,11 @@ export default function BuquesPage() {
         setIsEditing(true);
     };
 
-    // Maneja la actualización de un buque
+    // maneja la actualización de un buque
     const handleUpdateBuque = async (updatedBuqueData: Partial<Buque>) => {
         if (!editingBuque) return;
         setUpdateError(null);
-        setActualizando(true); // <--- Activa loader
+        setActualizando(true); // activa loader
         try {
             const updatedBuque = await apiUpdateBuque(editingBuque.id, updatedBuqueData);
             setBuques(buques.map(buque => buque.id === updatedBuque.id ? updatedBuque : buque));
@@ -96,15 +96,15 @@ export default function BuquesPage() {
             setUpdateError('Error al actualizar el buque');
             console.error(err);
         } finally {
-            setActualizando(false); // <--- Desactiva loader
+            setActualizando(false); // desactiva loader
         }
     };
 
-    // Maneja la eliminación de un buque
+    // maneja la eliminación de un buque
     const handleDelete = async (id: number) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este buque?')) {
             setDeleteError(null);
-            setActualizando(true); // <--- Activa loader
+            setActualizando(true); // activa loader
             try {
                 await apiDeleteBuque(id);
                 setBuques(buques.filter(buque => buque.id !== id));
@@ -112,15 +112,15 @@ export default function BuquesPage() {
                 setDeleteError('Error al eliminar el buque');
                 console.error(err);
             } finally {
-                setActualizando(false); // <--- Desactiva loader
+                setActualizando(false); // desactiva loader
             }
         }
-    };    // Abre el modal para crear un nuevo buque
+    };    // abre el modal para crear un nuevo buque
     const handleOpenNewBuqueModal = () => {
         setIsCreatingNewBuque(true);
         setNewBuqueData({
             nombre: '',
-            agenciaId: '', // Start with empty string to force selection
+            agenciaId: '',
             tipo: 'materia prima',
             loa: 0,
             estado: 'Activo',
@@ -128,7 +128,7 @@ export default function BuquesPage() {
         setCreationError(null);
     };
 
-    // Cierra los modales
+    // cierra los modales
     const handleCloseNewBuqueModal = () => {
         setIsCreatingNewBuque(false);
     };
@@ -169,19 +169,18 @@ export default function BuquesPage() {
         };
     }, [showColumnsMenu]);
 
-    // Cierra el modal de editar buque
+    // cierra el modal de editar buque
     const handleCloseEditBuqueModal = () => {
         setIsEditing(false);
-    };    // Maneja el cambio de datos en campos de entrada
+    };    // maneja el cambio de datos en campos de entrada
     // para el nuevo buque
     const handleNewBuqueInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         let processedValue: string | number = value;
 
         if (name === 'agenciaId') {
-            processedValue = parseInt(value, 10); // Convierte a entero, base 10
+            processedValue = parseInt(value, 10);
             if (isNaN(processedValue) || value === '') {
-                // If empty string or invalid number, keep it as empty string for form validation
                 processedValue = '';
             }
         } else if (name === 'loa') {
@@ -192,7 +191,7 @@ export default function BuquesPage() {
             ...prevData,
             [name]: processedValue,
         }));
-    };    // Maneja el cambio de datos en campos de entrada
+    };    // maneja el cambio de datos en campos de entrada
     // para el buque que se está editando
     const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -208,10 +207,10 @@ export default function BuquesPage() {
             ...prevData,
             [name]: processedValue,
         } : prevData);
-    };    // Maneja la creación de un nuevo buque
+    };    // maneja la creacion de un nuevo buque
     const handleCreateNewBuque = async () => {
         setCreationError(null);
-          // Client-side validation
+          // validacion del la entrada del nuevo buque
         if (!newBuqueData.nombre.trim()) {
             setCreationError('El nombre del buque es obligatorio');
             return;
@@ -227,7 +226,7 @@ export default function BuquesPage() {
             return;
         }
         
-        setActualizando(true); // <--- Activa loader
+        setActualizando(true); // activa loader
         try {
             const response = await fetch('/api/buques', {
                 method: 'POST',
@@ -241,16 +240,16 @@ export default function BuquesPage() {
                 const error = await response.json();
                 throw new Error(error.message || 'Error al crear el buque');
             }
-            
-            // cierra el modal  
+              
             const newBuque = await response.json();
             setBuques([...buques, newBuque]);
+            // cierra el modal
             setIsCreatingNewBuque(false);
         } catch (error: unknown) {
             console.error('Error al crear el buque:', error);
             setCreationError(error instanceof Error ? error.message : 'Error al crear el buque');
         } finally {
-            setActualizando(false); // <--- Desactiva loader
+            setActualizando(false); // desactiva loader
         }
     };
 
@@ -300,7 +299,7 @@ export default function BuquesPage() {
         <div className='bg-gray-200 min-h-screen flex justify-center'>
             <div className="container mx-auto p-6">
 
-                {/* Modal para crear nuevo buque */}
+                {/* modal para crear nuevo buque */}
                 {isCreatingNewBuque && (
                     <div className="bg-white rounded-lg shadow-md p-6 mb-8 max-w-md">
                         <h2 className="text-xl font-bold text-gray-800 mb-4">Crear Nuevo Buque</h2>
@@ -382,7 +381,7 @@ export default function BuquesPage() {
                     </div>
                 )}
 
-                {/* Modal para editar buque */}
+                {/* modal para editar buque */}
                 {isEditing && editingBuque && (
                     <div className="bg-white rounded-lg shadow-md p-6 mb-8 max-w-md">
                         <h2 className="text-xl font-bold text-gray-800 mb-4">Modificar Usuario</h2>
@@ -470,7 +469,7 @@ export default function BuquesPage() {
                     </div>
                 )}
 
-                {/* Tabla de buques */}
+                {/* tabla de buques */}
                 <div className="bg-white rounded-lg shadow-md p-6 mb-8">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-bold text-gray-800">Gestión de Buques</h1>

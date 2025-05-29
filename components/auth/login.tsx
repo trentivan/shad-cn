@@ -19,14 +19,14 @@ export default function LoginPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ correo, contrasena }),
             });
-            // Después de un login exitoso:
+            // despues de un login exitoso:
             if (!res.ok) {
                 setError('Credenciales incorrectas');
                 return;
             }
             const user = await res.json();
-            localStorage.setItem('user', JSON.stringify(user)); // <--- Guarda el usuario con rol
-            router.push('/'); // Redirige a la página principal
+            localStorage.setItem('user', JSON.stringify(user)); // guarda el usuario con rol
+            router.push('/');
         } catch {
             setError('Error al iniciar sesión');
         }
